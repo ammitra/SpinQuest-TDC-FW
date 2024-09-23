@@ -111,8 +111,8 @@ begin
         fine_i      => data_s,
         reset_i     => rst_s,
         coarse_i    => coarse_s,
-        timestamp_o => timestamp_s
-        --valid_o     => valid_s
+        timestamp_o => timestamp_s,
+        valid_o     => valid_s
     );
     
     uut_coarse : entity work.CoarseCounter
@@ -129,6 +129,8 @@ begin
     ena_s <= '1';
     rst_s <= '0';
     wait for 2000 ns;
+    
+    -- series of valid pulses spread out in time
     hit_s <= '1';
     wait for 30 ns;
     hit_s <= '0';
@@ -137,6 +139,22 @@ begin
     wait for 30 ns;
     hit_s <= '0';
     wait for 74.3 ns;
+    hit_s <= '1';
+    wait for 30 ns;
+    hit_s <= '0';
+    
+    -- one ultra-short pulse (should be rejected)
+    wait for 112 ns;
+    hit_s <= '1';
+    wait for 9.5 ns;
+    hit_s <= '0';
+    
+    -- two valid pulses in close succession
+    wait for 123 ns;
+    hit_s <= '1';
+    wait for 30 ns;
+    hit_s <= '0';
+    wait for 3 ns;
     hit_s <= '1';
     wait for 30 ns;
     hit_s <= '0';

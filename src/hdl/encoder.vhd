@@ -9,6 +9,8 @@
 --  * first version, passed behavioral simulation tests
 -- V0.1: 23/09/2024
 --  * added valid hit detection (pulse duration requirement set by generic)
+-- V0.2: 24/09/2024
+--  * handled edge case where hit arrives on rising edge of RF clock
 -----------------------------------------------------------------------------------
 
 library IEEE;
@@ -150,9 +152,21 @@ begin
                             when "10" =>    -- Range 16-23
                                 encoded_fine_time <= std_logic_vector(to_unsigned(23, encoded_fine_time'length));
                                 true_coarse_period <= std_logic_vector(unsigned(coarse_i)-1);
-                            when "11" =>    -- Range 24-31
-                                encoded_fine_time <= std_logic_vector(to_unsigned(31, encoded_fine_time'length));
-                                true_coarse_period <= std_logic_vector(unsigned(coarse_i)-1);
+                            ----------------------------------------------------------------------------------------------------
+                            -- EDGE CASE:
+                            -- If the hit arrives exactly on the rising edge of the RF clock, then the hit will be attributed 
+                            -- (incorrectly) to the previous RF bucket. If a hit were to arrive on the rising edge of the RF clock
+                            -- then we would see:
+                            --      fine_i[9:2]    = "11111111"
+                            --      fine_last[9:2] = "00000000"
+                            -- and a "true" fine period of 
+                            --      true_fine_period = "11" 
+                            -- Therefore, for this edge case only, we simply take the current coarse period as the proper RF bucket.
+                            -- In this way, the hit is attributed to the correct RF bucket.
+                            ----------------------------------------------------------------------------------------------------
+                            when "11" =>    -- hit arrives in 1st interval of current RF bucket (00000)
+                                encoded_fine_time <= std_logic_vector(to_unsigned(0, encoded_fine_time'length));
+                                true_coarse_period <= coarse_i;
                             when others => 
                                 null;
                         end case;

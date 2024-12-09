@@ -11,11 +11,15 @@
 --  * added valid hit detection (pulse duration requirement set by generic)
 -- V0.2: 24/09/2024
 --  * handled edge case where hit arrives on rising edge of RF clock
+-- V0.3: 09/12/2024
+--  * simplified fine counter - no need to calculate true fine time, it gets sent from sampler
 -----------------------------------------------------------------------------------
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
+
+use work.common_types.all;
 
 entity encoder is
     generic (
@@ -66,25 +70,10 @@ begin
         end if;
     end process p_shift;
     
-    p_fine_period_id : process(fine_i)
-    begin 
-        -- Look at the 2 LSBs from the LAST VALUE of the sampler - this is the fine time counter. Since the counter is incremented on the 
-        -- rising edge of the fast clock, it will always be one value higher than when the hit arrived. Simple MUX to 
-        -- determine the real time can then be implemented. The result will be an offset of 2 from the current clk0 fine counter
-        case fine_last(1 downto 0) is
-            when "00" =>    -- hit arrived during previous RF bucket
-                true_fine_period <= "11";
-            when "01" =>
-                true_fine_period <= "00";
-            when "10" =>
-                true_fine_period <= "01";
-            when "11" =>
-                true_fine_period <= "10";
-            when others =>
-                null;
-        end case;
-    end process p_fine_period_id;
-
+    -- The fine period (0-3) in which the hit arrived is sent from the sampler as-is, with no need for any calculation.
+    -- We therefore only need to wire the 2 LSBs from the sampler to the true_fine_period signal
+    true_fine_period <= unsigned(fine_i(1 downto 0));
+    
     -- FSM for determining hit validity based on input pulse duration
     p_is_valid : process(clk_0, reset_i)
     begin 

@@ -28,7 +28,7 @@ entity rr_arbiter_41 is
         -- Input from requesters 
         empty_in : std_logic_vector(0 to 3);    -- Empty signals from requester FIFOs
         valid_in : std_logic_vector(0 to 3);    -- Read valid signals from requester FIFOs
-        data_in  : slv2_array(0 to 3);              -- Read data from requester FIFOs
+        data_in  : slv39_array(0 to 3);         -- Read data from requester FIFOs
         -- Control inputs
         clk      : in std_logic;    -- 4x system clock (212.4 MHz)
         rst      : in std_logic;    -- synchronous, active high reset
@@ -58,7 +58,7 @@ begin
     -- state moves to transmit, where a FIFO read is granted and the system waits for the 
     -- read valid flag from the FIFO. After the read valid flag is pulsed, the state machine
     -- moves to the buffered state and the process continues until there are no more requests.
-    arbitrate : process(present_state, request_reg, grant_reg, data_in)
+    arbitrate : process(present_state, request_reg, grant_reg, data_in, which_fifo, valid_in, buffer_state)
     begin
         case present_state is
             when s_idle =>

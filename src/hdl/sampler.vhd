@@ -6,6 +6,9 @@
 --
 -- V0: 23/09/2024
 --  * first version, passed behavioral simulation tests
+-- V0.1 09/12/2024
+--  * added second layer of sampling FFs to meet timing constraints on clks90,135 FE
+--  * calculate true hit fine time period and send it in data output
 -----------------------------------------------------------------------------------
 
 library IEEE;
@@ -78,7 +81,9 @@ architecture Behavioral of sampler is
 	-- Signals for latching on the rising and falling edges of the four clocks
 	signal register_rising  : std_logic_vector(3 downto 0);
 	signal register_falling : std_logic_vector(3 downto 0);
-	-- Signal for latching everything to 0 degree domain (rising edge)
+	signal register_rising_ss  : std_logic_vector(3 downto 0);
+	signal register_falling_ss : std_logic_vector(3 downto 0);
+	-- Signals for latching everything to 0 degree domain (rising edge)
 	signal register_cdc : std_logic_vector(7 downto 0);
 	-- Signals for fine counter which counts number of fast periods in an RF period
 	signal shift_reg  : std_logic_vector(3 downto 0) := (others => '0');
@@ -86,7 +91,8 @@ architecture Behavioral of sampler is
 	signal toggle     : std_logic := '0';
 	signal startup_true : std_logic := '0';
 	signal clk0_count : unsigned(1 downto 0) := (others => '0'); -- clk0 will be 4x faster than RF (coarse) clock
-	
+	signal clk0_count_store : unsigned(1 downto 0) := (others => '0');    -- store the clk0 count at time of hit arrival
+    signal hit_last : std_logic;
 begin
 
 	-------------------------------------------------------
@@ -177,31 +183,100 @@ begin
         Q  => register_falling(0),
         R  => reset_i
     );
+
+	-------------------------------------------------------
+	-- Second stage sampling FFs.
+	-- These FFs will be connected to the CDC register that 
+	-- takes everything to the clk0 domain. This means that 
+	-- full encoding takes 1cc longer than before and so the 
+	-- encoding algorithm must be changed.
+	-- Naming convention:
+	--     ff_ss_clk_[from clk]_[to clk]
+	-------------------------------------------------------
+    ff_ss_clk_0re_0re : entity work.FDRE_RE         -- clk0 RE -> clk0 RE           (1 clk0 pd setup/hold = 4.7ns)
+    port map (
+        C  => clk0,
+        CE => enable_i, 
+        D  => register_rising(3),
+        Q  => register_rising_ss(3),
+        R  => reset_i
+    );
+    ff_ss_clk_0fe_0re : entity work.FDRE_RE         -- clk0 FE -> clk0 RE           (4/8 clk0 pd s/h = 2.3ns)
+    port map (
+        C  => clk0,
+        CE => enable_i, 
+        D  => register_falling(3),
+        Q  => register_falling_ss(3),
+        R  => reset_i
+    );
+    ff_ss_clk_45re_0re : entity work.FDRE_RE         -- clk45 RE -> clk0 RE          (7/8 clk0 pd s/h = 4.1ns)
+    port map (
+        C  => clk0,
+        CE => enable_i, 
+        D  => register_rising(2),
+        Q  => register_rising_ss(2),
+        R  => reset_i
+    );
+    ff_ss_clk_45fe_0re : entity work.FDRE_RE         -- clk45 FE -> clk0 RE          (3/8 clk0 pd s/h = 1.74ns)
+    port map (
+        C  => clk0,
+        CE => enable_i, 
+        D  => register_falling(2),
+        Q  => register_falling_ss(2),
+        R  => reset_i
+    );
+    ff_ss_clk_90re_0re : entity work.FDRE_RE         -- clk90 RE -> clk0 RE          (6/8 clk0 pd s/h = 3.5ns)
+    port map (
+        C  => clk0,
+        CE => enable_i, 
+        D  => register_rising(1),
+        Q  => register_rising_ss(1),
+        R  => reset_i
+    );
+    ff_ss_clk_90fe_90re : entity work.FDRE_RE         -- clk90 FE -> **clk90 RE**     (4/8 clk0 pd s/h = 2.3ns)
+    port map (
+        C  => clk2, -- 90 degree clk RE
+        CE => enable_i, 
+        D  => register_falling(1),
+        Q  => register_falling_ss(1),
+        R  => reset_i
+    );
+    ff_ss_clk_135re_0re : entity work.FDRE_RE         -- clk135 RE -> clk0 RE         (5/8 clk0 pd s/h = 2.9ns)
+    port map (
+        C  => clk0,
+        CE => enable_i, 
+        D  => register_rising(0),
+        Q  => register_rising_ss(0),
+        R  => reset_i
+    );
+    ff_ss_clk_135fe_90re : entity work.FDRE_RE         -- clk135 FE -> **clk90 RE**    (3/8 clk0 pd s/h = 1.74 ns)
+    port map (
+        C  => clk2, -- 90 degree clk RE
+        CE => enable_i, 
+        D  => register_falling(0),
+        Q  => register_falling_ss(0),
+        R  => reset_i
+    );
     
 	--------------------------------------------------------------------
-	-- FFs to bring all RE/FE samples to 0degree domain (on rising edge).
-	-- This part might really be difficult to meet timing constraints given
-	-- that the ff_clk3_fe signal will only have 1/8 of a fast clock period 
-	-- to be latched in. 
-	-- One alternative is to have a second array of (RE-triggered) FFs 
-	-- that are clocked by clk0,clk0,clk2,clk3 before finally latching everything
-	-- in with the four clk0 (RE) flip flops. This gives setup times of 
-	-- 2.3ns, 1.76ns, 2.3ns, and 2.3ns (NEED TO CHECK IMPLEMENTATION)
+	-- FFs to bring all RE/FE samples to 0degree domain from the second
+	-- stage (SS) registers.
 	--------------------------------------------------------------------
-	p_latch_cdc : process(clk0, reset_i)
+	p_latch_cdc : process(clk0, reset_i, register_falling, register_rising, register_falling_ss, register_rising_ss)
 	begin 
         if rising_edge(clk0) then 
             if reset_i = '1' then
                 register_cdc <= (others => '0');
             else
-                register_cdc(7 downto 4) <= register_rising;    -- rising edges are 4 MSBs
-                register_cdc(3 downto 0) <= register_falling;   -- falling edges are 4 LSBs
+                register_cdc(7 downto 4) <= register_rising_ss;    -- rising edges are 4 MSBs
+                register_cdc(3 downto 0) <= register_falling_ss;   -- falling edges are 4 LSBs
             end if;
         end if;
 	end process p_latch_cdc;
 	
 	-- Connect the cdc register to the data output port. 4 LSBs will be the fine counter
-    data_o <= register_cdc & std_logic_vector(clk0_count);
+	-- Data output format: 8-bit hit pattern + 2-bit fine counter (0,1,2,3 representing hit arrival fine period)
+    data_o <= register_cdc & std_logic_vector(clk0_count_store);
     
     -- on the rising edge of the RF clock, set a toggle for resetting the fast counter
     p_toggle : process(clk_RF)
@@ -210,6 +285,35 @@ begin
             toggle <= not toggle;
         end if;
     end process p_toggle;
+    
+    -- on the rising edge of the clk0, store the last value of the hit 
+    process(clk0, reset_i)
+    begin 
+        if rising_edge(clk0) then 
+            if reset_i = '1' then
+                hit_last <= '0';
+            else
+                hit_last <= hit_i;
+            end if;
+        end if;
+    end process;
+    
+    -- On the rising edge of the RF clock, latch in the fine clk0 counter value when a hit arrives.
+    -- Since there are two CDC stages before everything gets shifted to the clk0 domain, there are 
+    -- enough CCs for this value to stabilize before the 10-bit data is sent out. Therefore, there 
+    -- is no need to correct it on the encoder end - the encoder can use the result as-is.
+    p_store_clk0 : process(clk0, hit_i, reset_i)
+    begin 
+        if rising_edge(clk0) then 
+            if reset_i = '1' then 
+                clk0_count_store <= (others => '0');
+            else
+                if (hit_last = '0') and (hit_i = '1') then 
+                    clk0_count_store <= clk0_count;
+                end if;
+            end if;
+        end if;
+    end process p_store_clk0;
     
     -- fine counter logic to determine during which of the four fast periods that make up a coarse period the hit arrived 
     p_fine_count : process(clk0)

@@ -9,6 +9,9 @@
 -- V0.1 09/12/2024
 --  * added second layer of sampling FFs to meet timing constraints on clks90,135 FE
 --  * calculate true hit fine time period and send it in data output
+-- V0.2 09/12/2024
+--  * Use Xilinx FDRE primitives with inverted clock for falling edge DFFs 
+--  * Implement manual placement of LUT1 and first stage sampling FFs with RLOC
 -----------------------------------------------------------------------------------
 
 library IEEE;
@@ -37,6 +40,12 @@ entity sampler is
 end sampler;
 
 architecture Behavioral of sampler is
+    -- Preserve architecture
+    attribute keep_hierarchy : string;
+    attribute keep : string;
+    attribute dont_touch : string;
+    attribute rloc : string;
+    attribute keep_hierarchy of Behavioral : architecture is "true";
     ---------------------------------------------------------------------------
     -- PRIMITIVES
     ---------------------------------------------------------------------------
@@ -78,13 +87,32 @@ architecture Behavioral of sampler is
 	signal b2B_out : std_logic;    -- from b2B -> ff1RE, ff1FE
 	signal b2C_out : std_logic;    -- from b2C -> ff2RE, ff2FE
 	signal b2D_out : std_logic;    -- from b2D -> ff3RE, ff3FE
+    attribute keep of b0_out  : signal is "true";
+    attribute keep of b1A_out : signal is "true";
+    attribute keep of b1B_out : signal is "true";
+    attribute keep of b2A_out : signal is "true";
+    attribute keep of b2B_out : signal is "true";
+    attribute keep of b2C_out : signal is "true";
+    attribute keep of b2D_out : signal is "true";
+    attribute dont_touch of b0_out  : signal is "true";
+    attribute dont_touch of b1A_out : signal is "true";
+    attribute dont_touch of b1B_out : signal is "true";
+    attribute dont_touch of b2A_out : signal is "true";
+    attribute dont_touch of b2B_out : signal is "true";
+    attribute dont_touch of b2C_out : signal is "true";
+    attribute dont_touch of b2D_out : signal is "true";
 	-- Signals for latching on the rising and falling edges of the four clocks
 	signal register_rising  : std_logic_vector(3 downto 0);
 	signal register_falling : std_logic_vector(3 downto 0);
 	signal register_rising_ss  : std_logic_vector(3 downto 0);
 	signal register_falling_ss : std_logic_vector(3 downto 0);
+    attribute keep of register_rising : signal is "true";
+    attribute keep of register_falling : signal is "true";
+    attribute keep of register_rising_ss : signal is "true";
+    attribute keep of register_falling_ss : signal is "true";
 	-- Signals for latching everything to 0 degree domain (rising edge)
 	signal register_cdc : std_logic_vector(7 downto 0);
+	attribute keep of register_cdc : signal is "true";
 	-- Signals for fine counter which counts number of fast periods in an RF period
 	signal shift_reg  : std_logic_vector(3 downto 0) := (others => '0');
 	signal shift_lst  : std_logic_vector(3 downto 0) := (others => '0');
@@ -93,6 +121,32 @@ architecture Behavioral of sampler is
 	signal clk0_count : unsigned(1 downto 0) := (others => '0'); -- clk0 will be 4x faster than RF (coarse) clock
 	signal clk0_count_store : unsigned(1 downto 0) := (others => '0');    -- store the clk0 count at time of hit arrival
     signal hit_last : std_logic;
+    attribute keep of shift_reg : signal is "true";
+    attribute keep of shift_lst : signal is "true";
+    attribute keep of toggle : signal is "true";
+    attribute keep of startup_true : signal is "true";
+    attribute keep of clk0_count : signal is "true";
+    attribute keep of clk0_count_store : signal is "true";
+    attribute keep of hit_last : signal is "true";
+    
+    -- manual placement of hit signal routing LUTs
+    attribute rloc of b2_A : label is "X8Y156";
+    attribute rloc of b2_B : label is "X8Y155";
+    attribute rloc of b1_A : label is "X8Y154";
+    attribute rloc of b0   : label is "X8Y153";
+    attribute rloc of b1_B : label is "X8Y152";
+    attribute rloc of b2_C : label is "X8Y151";
+    attribute rloc of b2_D : label is "X8Y150";
+    -- manual placement of sampling DFFs
+    attribute rloc of ff_clk0_re : label is "X9Y155"; 
+    attribute rloc of ff_clk0_fe : label is "X9Y155"; 
+    attribute rloc of ff_clk1_re : label is "X9Y154"; 
+    attribute rloc of ff_clk1_fe : label is "X9Y154"; 
+    attribute rloc of ff_clk2_re : label is "X9Y153"; 
+    attribute rloc of ff_clk2_fe : label is "X9Y153"; 
+    attribute rloc of ff_clk3_re : label is "X9Y152"; 
+    attribute rloc of ff_clk3_fe : label is "X9Y152"; 
+    
 begin
 
 	-------------------------------------------------------
@@ -116,73 +170,174 @@ begin
 	-------------------------------------------------------
 	-- First stage sampling FFs
 	-------------------------------------------------------
-	ff_clk0_re : entity work.FDRE_RE   -- rising edge of clk0
-    port map (
-        C  => clk0,
-        CE => enable_i, 
-        D  => b2A_out,
-        Q  => register_rising(3),
-        R  => reset_i
-    );
-    ff_clk0_fe : entity work.FDRE_FE    -- falling edge of clk0
-    port map (
-        C  => clk0,
-        CE => enable_i, 
-        D  => b2A_out,
-        Q  => register_falling(3),
-        R  => reset_i
-    );
-    -------------------------------------------------------------
-	ff_clk1_re : entity work.FDRE_RE   -- rising edge of clk1
-    port map (
-        C  => clk1,
-        CE => enable_i, 
-        D  => b2B_out,
-        Q  => register_rising(2),
-        R  => reset_i
-    );
-    ff_clk1_fe : entity work.FDRE_FE    -- falling edge of clk1
-    port map (
-        C  => clk1,
-        CE => enable_i, 
-        D  => b2B_out,
-        Q  => register_falling(2),
-        R  => reset_i
-    );
-    -------------------------------------------------------------
-	ff_clk2_re : entity work.FDRE_RE   -- rising edge of clk2
-    port map (
-        C  => clk2,
-        CE => enable_i, 
-        D  => b2C_out,
-        Q  => register_rising(1),
-        R  => reset_i
-    );
-    ff_clk2_fe : entity work.FDRE_FE    -- falling edge of clk2
-    port map (
-        C  => clk2,
-        CE => enable_i, 
-        D  => b2C_out,
-        Q  => register_falling(1),
-        R  => reset_i
-    );
-    -------------------------------------------------------------
-	ff_clk3_re : entity work.FDRE_RE   -- rising edge of clk3
-    port map (
-        C  => clk3,
-        CE => enable_i, 
-        D  => b2D_out,
-        Q  => register_rising(0),
-        R  => reset_i
-    );
-    ff_clk3_fe : entity work.FDRE_FE    -- falling edge of clk3
-    port map (
-        C  => clk3,
-        CE => enable_i, 
-        D  => b2D_out,
-        Q  => register_falling(0),
-        R  => reset_i
-    );
+	ff_clk0_re : FDRE
+	generic map (
+       INIT => '0',          -- Initial value of register, '0', '1'
+       IS_C_INVERTED => '0'  -- Optional inversion for C
+	)
+	port map (
+       Q  => register_rising(3),    -- 1-bit output: Data
+       C  => clk0,                  -- 1-bit input: Clock
+       CE => enable_i,              -- 1-bit input: Clock enable
+       D  => b2A_out,               -- 1-bit input: Data
+       R  => reset_i                -- 1-bit input: Synchronous reset
+	);
+	ff_clk0_fe : FDRE
+	generic map (
+       INIT => '0',          -- Initial value of register, '0', '1'
+       IS_C_INVERTED => '1'  -- Optional inversion for C
+	)
+	port map (
+       Q  => register_falling(3),   -- 1-bit output: Data
+       C  => clk0,                  -- 1-bit input: Clock
+       CE => enable_i,              -- 1-bit input: Clock enable
+       D  => b2A_out,               -- 1-bit input: Data
+       R  => reset_i                -- 1-bit input: Synchronous reset
+	);
+	
+	ff_clk1_re : FDRE
+	generic map (
+       INIT => '0',          -- Initial value of register, '0', '1'
+       IS_C_INVERTED => '0'  -- Optional inversion for C
+	)
+	port map (
+       Q  => register_rising(2),    -- 1-bit output: Data
+       C  => clk1,                  -- 1-bit input: Clock
+       CE => enable_i,              -- 1-bit input: Clock enable
+       D  => b2B_out,               -- 1-bit input: Data
+       R  => reset_i                -- 1-bit input: Synchronous reset
+	);
+	ff_clk1_fe : FDRE
+	generic map (
+       INIT => '0',          -- Initial value of register, '0', '1'
+       IS_C_INVERTED => '1'  -- Optional inversion for C
+	)
+	port map (
+       Q  => register_falling(2),   -- 1-bit output: Data
+       C  => clk1,                  -- 1-bit input: Clock
+       CE => enable_i,              -- 1-bit input: Clock enable
+       D  => b2B_out,               -- 1-bit input: Data
+       R  => reset_i                -- 1-bit input: Synchronous reset
+	);
+	
+	ff_clk2_re : FDRE
+	generic map (
+       INIT => '0',          -- Initial value of register, '0', '1'
+       IS_C_INVERTED => '0'  -- Optional inversion for C
+	)
+	port map (
+       Q  => register_rising(1),    -- 1-bit output: Data
+       C  => clk2,                  -- 1-bit input: Clock
+       CE => enable_i,              -- 1-bit input: Clock enable
+       D  => b2C_out,               -- 1-bit input: Data
+       R  => reset_i                -- 1-bit input: Synchronous reset
+	);
+	ff_clk2_fe : FDRE
+	generic map (
+       INIT => '0',          -- Initial value of register, '0', '1'
+       IS_C_INVERTED => '1'  -- Optional inversion for C
+	)
+	port map (
+       Q  => register_falling(1),   -- 1-bit output: Data
+       C  => clk2,                  -- 1-bit input: Clock
+       CE => enable_i,              -- 1-bit input: Clock enable
+       D  => b2C_out,               -- 1-bit input: Data
+       R  => reset_i                -- 1-bit input: Synchronous reset
+	);
+	
+	ff_clk3_re : FDRE
+	generic map (
+       INIT => '0',          -- Initial value of register, '0', '1'
+       IS_C_INVERTED => '0'  -- Optional inversion for C
+	)
+	port map (
+       Q  => register_rising(0),    -- 1-bit output: Data
+       C  => clk2,                  -- 1-bit input: Clock
+       CE => enable_i,              -- 1-bit input: Clock enable
+       D  => b2D_out,               -- 1-bit input: Data
+       R  => reset_i                -- 1-bit input: Synchronous reset
+	);
+	ff_clk3_fe : FDRE
+	generic map (
+       INIT => '0',          -- Initial value of register, '0', '1'
+       IS_C_INVERTED => '1'  -- Optional inversion for C
+	)
+	port map (
+       Q  => register_falling(0),   -- 1-bit output: Data
+       C  => clk3,                  -- 1-bit input: Clock
+       CE => enable_i,              -- 1-bit input: Clock enable
+       D  => b2D_out,               -- 1-bit input: Data
+       R  => reset_i                -- 1-bit input: Synchronous reset
+	);
+	
+	
+--	ff_clk0_re : entity work.FDRE_RE   -- rising edge of clk0
+--    port map (
+--        C  => clk0,
+--        CE => enable_i, 
+--        D  => b2A_out,
+--        Q  => register_rising(3),
+--        R  => reset_i
+--    );
+--    ff_clk0_fe : entity work.FDRE_FE    -- falling edge of clk0
+--    port map (
+--        C  => clk0,
+--        CE => enable_i, 
+--        D  => b2A_out,
+--        Q  => register_falling(3),
+--        R  => reset_i
+--    );
+--    -------------------------------------------------------------
+--	ff_clk1_re : entity work.FDRE_RE   -- rising edge of clk1
+--    port map (
+--        C  => clk1,
+--        CE => enable_i, 
+--        D  => b2B_out,
+--        Q  => register_rising(2),
+--        R  => reset_i
+--    );
+--    ff_clk1_fe : entity work.FDRE_FE    -- falling edge of clk1
+--    port map (
+--        C  => clk1,
+--        CE => enable_i, 
+--        D  => b2B_out,
+--        Q  => register_falling(2),
+--        R  => reset_i
+--    );
+--    -------------------------------------------------------------
+--	ff_clk2_re : entity work.FDRE_RE   -- rising edge of clk2
+--    port map (
+--        C  => clk2,
+--        CE => enable_i, 
+--        D  => b2C_out,
+--        Q  => register_rising(1),
+--        R  => reset_i
+--    );
+--    ff_clk2_fe : entity work.FDRE_FE    -- falling edge of clk2
+--    port map (
+--        C  => clk2,
+--        CE => enable_i, 
+--        D  => b2C_out,
+--        Q  => register_falling(1),
+--        R  => reset_i
+--    );
+--    -------------------------------------------------------------
+--	ff_clk3_re : entity work.FDRE_RE   -- rising edge of clk3
+--    port map (
+--        C  => clk3,
+--        CE => enable_i, 
+--        D  => b2D_out,
+--        Q  => register_rising(0),
+--        R  => reset_i
+--    );
+--    ff_clk3_fe : entity work.FDRE_FE    -- falling edge of clk3
+--    port map (
+--        C  => clk3,
+--        CE => enable_i, 
+--        D  => b2D_out,
+--        Q  => register_falling(0),
+--        R  => reset_i
+--    );
 
 	-------------------------------------------------------
 	-- Second stage sampling FFs.

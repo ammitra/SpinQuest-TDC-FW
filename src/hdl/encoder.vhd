@@ -13,6 +13,8 @@
 --  * handled edge case where hit arrives on rising edge of RF clock
 -- V0.3: 09/12/2024
 --  * simplified fine counter - no need to calculate true fine time, it gets sent from sampler
+-- V0.4: 17/12/2024
+--  * fixed state machine logic for saturation duration counting
 -----------------------------------------------------------------------------------
 
 library IEEE;
@@ -74,6 +76,7 @@ begin
     -- We therefore only need to wire the 2 LSBs from the sampler to the true_fine_period signal
     true_fine_period <= unsigned(fine_i(1 downto 0));
     
+
     -- FSM for determining hit validity based on input pulse duration
     p_is_valid : process(clk_0, reset_i)
     begin 
@@ -93,15 +96,17 @@ begin
                             state <= READY;
                             saturation_counter <= saturation_counter + 1;
                         end if;
-                    when READY => 
-                        if is_saturated = '1' then
-                            if to_integer(saturation_counter)+1 = g_sat_duration then 
-                                state <= DONE;
-                            else 
+                    when READY =>
+                        -- First check if the hit has been high long enough
+                        if to_integer(saturation_counter) = g_sat_duration-1 then
+                            state <= DONE;
+                        else
+                            -- Otherwise, check if the hit is still high. If not, return to idle state.
+                            if is_saturated = '1' then 
                                 saturation_counter <= saturation_counter + 1;
+                            else
+                                state <= IDLE;
                             end if;
-                        else 
-                            state <= IDLE;
                         end if;
                     when DONE => 
                         -- wait for hit pulse to go low before sending it out 

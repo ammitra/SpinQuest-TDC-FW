@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------------------
---  top-level tdc channel
+--  Single TDC channel
 ----------------------------------------------------------------------------------
 
 
@@ -18,6 +18,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 entity TDC_channel is
     generic (
         g_channel_id : natural := 0;
+        g_sat_duration : natural := 3;
         g_coarse_bits : natural := 28
     );
     port (
@@ -79,8 +80,9 @@ begin
     
     e_encoder : entity work.encoder
     generic map (
-        g_coarse_bits => g_coarse_bits,
-        g_channel_id  => g_channel_id
+        g_coarse_bits  => g_coarse_bits,
+        g_sat_duration => g_sat_duration,
+        g_channel_id   => g_channel_id
     )
     port map (
         clk_0       => clk0,

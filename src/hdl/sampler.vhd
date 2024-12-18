@@ -9,9 +9,9 @@
 -- V0.1 09/12/2024
 --  * added second layer of sampling FFs to meet timing constraints on clks90,135 FE
 --  * calculate true hit fine time period and send it in data output
--- V0.2 09/12/2024
---  * Use Xilinx FDRE primitives with inverted clock for falling edge DFFs 
---  * Implement manual placement of LUT1 and first stage sampling FFs with RLOC
+-- V0.2 17/12/2024
+--  * use Xilinx FDRE primitives for rising/falling edge sampling DFFs
+--  * manual placement of sampling + synchronization DFFs using RLOC
 -----------------------------------------------------------------------------------
 
 library IEEE;
@@ -59,22 +59,22 @@ architecture Behavioral of sampler is
 			O 	: out std_logic
 		);
 	end component;
-	-- FDCE primitives for sampling and clock domain transfer
-    component FDCE
-        generic(
-            INIT : bit := '0';           -- Initial value of Q
-            IS_C_INVERTED : bit := '0';  -- 0: positive edge
-            IS_D_INVERTED : bit := '0';  -- 0: active high
-            IS_CLR_INVERTED : bit := '0' -- 0: active high
+	-- FDRE primitives for sampling and clock domain transfer 
+	component FDRE
+        generic (
+           INIT          : bit := '0'; -- Initial value of register, '0', '1'
+           IS_C_INVERTED : bit := '0'; -- Optional inversion for C
+           IS_D_INVERTED : bit := '0'; -- Optional inversion for D
+           IS_R_INVERTED : bit := '0'  -- Optional inversion for R
         );
-        port(
-            C   : in std_logic;  -- Clock input
-            CE  : in std_logic;  -- Active high register clock enable
-            CLR : in std_logic;  -- Asynchronous clear.
-            D   : in std_logic;  -- Data input
-            Q   : out std_logic  -- Data output
+        port (
+           Q  : out std_logic;   -- 1-bit output: Data
+           C  : in std_logic;   -- 1-bit input: Clock
+           CE : in std_logic; -- 1-bit input: Clock enable
+           D  : in std_logic;   -- 1-bit input: Data
+           R  : in std_logic    -- 1-bit input: Synchronous reset
         );
-    end component;
+	end component;
     
     ---------------------------------------------------------------------------
     -- SIGNALS
@@ -146,6 +146,15 @@ architecture Behavioral of sampler is
     attribute rloc of ff_clk2_fe : label is "X9Y153"; 
     attribute rloc of ff_clk3_re : label is "X9Y152"; 
     attribute rloc of ff_clk3_fe : label is "X9Y152"; 
+    -- manual placement of CDC register FFs
+    attribute rloc of ff_ss_clk_0re_0re : label is "X10Y155"; 
+    attribute rloc of ff_ss_clk_0fe_0re : label is "X10Y155"; 
+    attribute rloc of ff_ss_clk_45re_0re : label is "X10Y154"; 
+    attribute rloc of ff_ss_clk_45fe_0re : label is "X10Y154"; 
+    attribute rloc of ff_ss_clk_90re_0re : label is "X10Y153"; 
+    attribute rloc of ff_ss_clk_90fe_90re : label is "X10Y153"; 
+    attribute rloc of ff_ss_clk_135re_0re : label is "X10Y152"; 
+    attribute rloc of ff_ss_clk_135fe_90re : label is "X10Y152"; 
     
 begin
 
@@ -252,7 +261,7 @@ begin
 	)
 	port map (
        Q  => register_rising(0),    -- 1-bit output: Data
-       C  => clk2,                  -- 1-bit input: Clock
+       C  => clk3,                  -- 1-bit input: Clock
        CE => enable_i,              -- 1-bit input: Clock enable
        D  => b2D_out,               -- 1-bit input: Data
        R  => reset_i                -- 1-bit input: Synchronous reset
@@ -270,75 +279,6 @@ begin
        R  => reset_i                -- 1-bit input: Synchronous reset
 	);
 	
-	
---	ff_clk0_re : entity work.FDRE_RE   -- rising edge of clk0
---    port map (
---        C  => clk0,
---        CE => enable_i, 
---        D  => b2A_out,
---        Q  => register_rising(3),
---        R  => reset_i
---    );
---    ff_clk0_fe : entity work.FDRE_FE    -- falling edge of clk0
---    port map (
---        C  => clk0,
---        CE => enable_i, 
---        D  => b2A_out,
---        Q  => register_falling(3),
---        R  => reset_i
---    );
---    -------------------------------------------------------------
---	ff_clk1_re : entity work.FDRE_RE   -- rising edge of clk1
---    port map (
---        C  => clk1,
---        CE => enable_i, 
---        D  => b2B_out,
---        Q  => register_rising(2),
---        R  => reset_i
---    );
---    ff_clk1_fe : entity work.FDRE_FE    -- falling edge of clk1
---    port map (
---        C  => clk1,
---        CE => enable_i, 
---        D  => b2B_out,
---        Q  => register_falling(2),
---        R  => reset_i
---    );
---    -------------------------------------------------------------
---	ff_clk2_re : entity work.FDRE_RE   -- rising edge of clk2
---    port map (
---        C  => clk2,
---        CE => enable_i, 
---        D  => b2C_out,
---        Q  => register_rising(1),
---        R  => reset_i
---    );
---    ff_clk2_fe : entity work.FDRE_FE    -- falling edge of clk2
---    port map (
---        C  => clk2,
---        CE => enable_i, 
---        D  => b2C_out,
---        Q  => register_falling(1),
---        R  => reset_i
---    );
---    -------------------------------------------------------------
---	ff_clk3_re : entity work.FDRE_RE   -- rising edge of clk3
---    port map (
---        C  => clk3,
---        CE => enable_i, 
---        D  => b2D_out,
---        Q  => register_rising(0),
---        R  => reset_i
---    );
---    ff_clk3_fe : entity work.FDRE_FE    -- falling edge of clk3
---    port map (
---        C  => clk3,
---        CE => enable_i, 
---        D  => b2D_out,
---        Q  => register_falling(0),
---        R  => reset_i
---    );
-
 	-------------------------------------------------------
 	-- Second stage sampling FFs.
 	-- These FFs will be connected to the CDC register that 
@@ -348,7 +288,11 @@ begin
 	-- Naming convention:
 	--     ff_ss_clk_[from clk]_[to clk]
 	-------------------------------------------------------
-    ff_ss_clk_0re_0re : entity work.FDRE_RE         -- clk0 RE -> clk0 RE           (1 clk0 pd setup/hold = 4.7ns)
+    ff_ss_clk_0re_0re : FDRE         -- clk0 RE -> clk0 RE           (1 clk0 pd setup/hold = 4.7ns)
+	generic map (
+       INIT => '0', 
+       IS_C_INVERTED => '0'
+	)
     port map (
         C  => clk0,
         CE => enable_i, 
@@ -356,7 +300,11 @@ begin
         Q  => register_rising_ss(3),
         R  => reset_i
     );
-    ff_ss_clk_0fe_0re : entity work.FDRE_RE         -- clk0 FE -> clk0 RE           (4/8 clk0 pd s/h = 2.3ns)
+    ff_ss_clk_0fe_0re : FDRE         -- clk0 FE -> clk0 RE           (4/8 clk0 pd s/h = 2.3ns)
+	generic map (
+       INIT => '0', 
+       IS_C_INVERTED => '0'
+	)
     port map (
         C  => clk0,
         CE => enable_i, 
@@ -364,7 +312,11 @@ begin
         Q  => register_falling_ss(3),
         R  => reset_i
     );
-    ff_ss_clk_45re_0re : entity work.FDRE_RE         -- clk45 RE -> clk0 RE          (7/8 clk0 pd s/h = 4.1ns)
+    ff_ss_clk_45re_0re : FDRE         -- clk45 RE -> clk0 RE          (7/8 clk0 pd s/h = 4.1ns)
+	generic map (
+       INIT => '0', 
+       IS_C_INVERTED => '0'
+	)
     port map (
         C  => clk0,
         CE => enable_i, 
@@ -372,7 +324,11 @@ begin
         Q  => register_rising_ss(2),
         R  => reset_i
     );
-    ff_ss_clk_45fe_0re : entity work.FDRE_RE         -- clk45 FE -> clk0 RE          (3/8 clk0 pd s/h = 1.74ns)
+    ff_ss_clk_45fe_0re : FDRE         -- clk45 FE -> clk0 RE          (3/8 clk0 pd s/h = 1.74ns)
+	generic map (
+       INIT => '0', 
+       IS_C_INVERTED => '0'
+	)
     port map (
         C  => clk0,
         CE => enable_i, 
@@ -380,7 +336,11 @@ begin
         Q  => register_falling_ss(2),
         R  => reset_i
     );
-    ff_ss_clk_90re_0re : entity work.FDRE_RE         -- clk90 RE -> clk0 RE          (6/8 clk0 pd s/h = 3.5ns)
+    ff_ss_clk_90re_0re : FDRE         -- clk90 RE -> clk0 RE          (6/8 clk0 pd s/h = 3.5ns)
+	generic map (
+       INIT => '0', 
+       IS_C_INVERTED => '0'
+	)
     port map (
         C  => clk0,
         CE => enable_i, 
@@ -388,7 +348,11 @@ begin
         Q  => register_rising_ss(1),
         R  => reset_i
     );
-    ff_ss_clk_90fe_90re : entity work.FDRE_RE         -- clk90 FE -> **clk90 RE**     (4/8 clk0 pd s/h = 2.3ns)
+    ff_ss_clk_90fe_90re : FDRE         -- clk90 FE -> **clk90 RE**     (4/8 clk0 pd s/h = 2.3ns)
+	generic map (
+       INIT => '0', 
+       IS_C_INVERTED => '0'
+	)
     port map (
         C  => clk2, -- 90 degree clk RE
         CE => enable_i, 
@@ -396,7 +360,11 @@ begin
         Q  => register_falling_ss(1),
         R  => reset_i
     );
-    ff_ss_clk_135re_0re : entity work.FDRE_RE         -- clk135 RE -> clk0 RE         (5/8 clk0 pd s/h = 2.9ns)
+    ff_ss_clk_135re_0re : FDRE         -- clk135 RE -> clk0 RE         (5/8 clk0 pd s/h = 2.9ns)
+	generic map (
+       INIT => '0', 
+       IS_C_INVERTED => '0'
+	)
     port map (
         C  => clk0,
         CE => enable_i, 
@@ -404,7 +372,11 @@ begin
         Q  => register_rising_ss(0),
         R  => reset_i
     );
-    ff_ss_clk_135fe_90re : entity work.FDRE_RE         -- clk135 FE -> **clk90 RE**    (3/8 clk0 pd s/h = 1.74 ns)
+    ff_ss_clk_135fe_90re : FDRE         -- clk135 FE -> **clk90 RE**    (3/8 clk0 pd s/h = 1.74 ns)
+	generic map (
+       INIT => '0', 
+       IS_C_INVERTED => '0'
+	)
     port map (
         C  => clk2, -- 90 degree clk RE
         CE => enable_i, 

@@ -1,0 +1,2 @@
+sources/sim/tb_1BRAM.vhd 93 lib=xil_defaultlib
+sources/sim/tb_64ch_behav.wcfg lib=others

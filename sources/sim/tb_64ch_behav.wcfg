@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="test_1BRAM_behav.wdb" id="1">
+         <top_modules>
+            <top_module name="common_types" />
+            <top_module name="glbl" />
+            <top_module name="test_1BRAM" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <zoom_setting>
+      <ZoomStartTime time="2,298.019 ns"></ZoomStartTime>
+      <ZoomEndTime time="2,419.720 ns"></ZoomEndTime>
+      <Cursor1Time time="2,248.119 ns"></Cursor1Time>
+   </zoom_setting>
+   <column_width_setting>
+      <NameColumnWidth column_width="229"></NameColumnWidth>
+      <ValueColumnWidth column_width="76"></ValueColumnWidth>
+   </column_width_setting>
+   <WVObjectSize size="9" />
+   <wvobject fp_name="divider95" type="divider">
+      <obj_property name="label">Top level</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/test_1BRAM/uut/DEBUG_grant">
+      <obj_property name="ElementShortName">DEBUG_grant[3:0]</obj_property>
+      <obj_property name="ObjectShortName">DEBUG_grant[3:0]</obj_property>
+      <obj_property name="Radix">BINARYRADIX</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/test_1BRAM/uut/DEBUG_valid">
+      <obj_property name="ElementShortName">DEBUG_valid</obj_property>
+      <obj_property name="ObjectShortName">DEBUG_valid</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/test_1BRAM/uut/DEBUG_data">
+      <obj_property name="ElementShortName">DEBUG_data[38:0]</obj_property>
+      <obj_property name="ObjectShortName">DEBUG_data[38:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="divider94" type="divider">
+      <obj_property name="label">BRAM Write</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/test_1BRAM/uut/BRAM_1_addr_b">
+      <obj_property name="ElementShortName">BRAM_1_addr_b[31:0]</obj_property>
+      <obj_property name="ObjectShortName">BRAM_1_addr_b[31:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/test_1BRAM/uut/BRAM_1_we_b">
+      <obj_property name="ElementShortName">BRAM_1_we_b[7:0]</obj_property>
+      <obj_property name="ObjectShortName">BRAM_1_we_b[7:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/test_1BRAM/uut/BRAM_1_wrdata_b">
+      <obj_property name="ElementShortName">BRAM_1_wrdata_b[63:0]</obj_property>
+      <obj_property name="ObjectShortName">BRAM_1_wrdata_b[63:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/test_1BRAM/uut/BRAM_1_clk_b">
+      <obj_property name="ElementShortName">BRAM_1_clk_b</obj_property>
+      <obj_property name="ObjectShortName">BRAM_1_clk_b</obj_property>
+   </wvobject>
+</wave_config>

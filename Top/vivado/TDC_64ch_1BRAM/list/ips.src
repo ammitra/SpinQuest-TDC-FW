@@ -1,0 +1,5 @@
+# This clock wizard IP is used for the simulation, not the actual design
+IP/clk_wiz_0/clk_wiz_0.xci
+
+# Block design for the 64 channel TDC implementation with only one BRAM
+BD/TDC_64ch_1BRAM/design_64ch_1BRAM.bd

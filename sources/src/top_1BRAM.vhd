@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------------------------------------------
--- Wrapper around the top-level 32 channel TDC module since VHDL 2008 is not compatible with block design
+-- Wrapper around the top-level 64 channel TDC module since VHDL 2008 is not compatible with block design
 ----------------------------------------------------------------------------------------------------------
 
 library IEEE;

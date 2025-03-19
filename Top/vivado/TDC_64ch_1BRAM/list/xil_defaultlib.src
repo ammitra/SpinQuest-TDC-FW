@@ -13,8 +13,9 @@ sources/src/TDC_channel.vhd
 sources/src/TDC_4ch.vhd 
 sources/src/TDC_64ch_1BRAM.vhd 
 
-# 64 channel TDC module that adds the BRAM bus interfaces via attributes [VHDL 2008]
-sources/src/top_1BRAM.vhd
-
 # Vivado block designs do not support VHDL 2008 modules, so we wrap the above top-level in VHDL 93
+# This 64 channel TDC module also adds the BRAM bus interfaces via Xilinx attributes
+sources/src/top_1BRAM.vhd 93
+
+# Block design HDL wrapper [VHDL 1993]
 sources/top/design_64ch_1BRAM_wrapper.vhd top=design_64ch_1BRAM_wrapper 93

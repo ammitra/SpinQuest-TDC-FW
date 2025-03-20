@@ -1,44 +1,43 @@
-----------------------------------------------------------------------------------
---  Single TDC channel
---
---  In this design, every channel has its own coarse counter to avoid high fanout.
-----------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------
+--! \file TDC_channel.vhd
+--! \brief A round-robin 4:1 arbiter that sends 4 parallel data streams to one serial output stream.
+--!
+--! \details A single TDC channel made up of a hit sampler and encoder. Specifically, this design assigns 
+--! a \ref CoarseCounter.vhd "`CoarseCounter`" module to every channel to reduce fanout on the coarse 
+--! counter signal.
+--! 
+--! \author Amitav Mitra, amitra3@jhu.edu
+---------------------------------------------------------------------------------------------------------
+
 
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 
--- Uncomment the following library declaration if using
--- arithmetic functions with Signed or Unsigned values
---use IEEE.NUMERIC_STD.ALL;
-
--- Uncomment the following library declaration if instantiating
--- any Xilinx leaf cells in this code.
---library UNISIM;
---use UNISIM.VComponents.all;
-
+--! \brief A round-robin 4:1 arbiter that sends 4 parallel data streams to one serial output stream.
+--! \details A single TDC channel made up of a hit sampler and encoder.
 entity TDC_channel is
     generic (
-        g_channel_id : natural := 0;
-        g_sat_duration : natural := 3;
-        g_coarse_bits : natural := 28
+        g_channel_id : natural := 0;    --! Channel ID
+        g_sat_duration : natural := 3;  --! Minumum number of `clk0` periods the hit must remain high to be considered valid and digitized
+        g_coarse_bits : natural := 28   --! The number of bits in the \ref CoarseCounter.vhd "coarse time counter".
     );
     port (
         -- TDC and system clocks 
-        clk0 : in std_logic;    -- 0 degree (212.4 MHz)
-        clk45 : in std_logic;    -- 45 degree
-        clk90 : in std_logic;    -- 90 degree
-        clk135 : in std_logic;    -- 135 degree
-        clk_sys : in std_logic;  -- 53.1 MHz
+        clk0 : in std_logic;    --! 0 degree (212.4 MHz, 4x RF) clock
+        clk45 : in std_logic;   --! 45 degree clock
+        clk90 : in std_logic;   --! 90 degree clock
+        clk135 : in std_logic;  --! 135 degree clock
+        clk_sys : in std_logic; --! RF clock (53.1 MHz)
         -- Control 
-        reset  : in std_logic;
-        enable : in std_logic;
+        reset  : in std_logic;  --! Active high reset
+        enable : in std_logic;  --! Active high enable
         -- Data input
         --coarse_i : in std_logic_vector(g_coarse_bits-1 downto 0);
-        hit : in std_logic;
+        hit : in std_logic;     --! Front-end discriminator hit
         -- Data output (timestamp + valid)
-        valid      : out std_logic;
-        timestamp  : out std_logic_vector(g_coarse_bits+10 downto 0)
+        valid      : out std_logic;                                     --! Data valid flag from \ref encoder.vhd "encoder"
+        timestamp  : out std_logic_vector(g_coarse_bits+10 downto 0)    --! 
     );
 end TDC_channel;
 

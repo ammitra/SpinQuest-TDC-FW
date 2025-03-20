@@ -1,29 +1,42 @@
 ----------------------------------------------------------------------------------
--- 64-channel TDC block
---
---           layer 1                 layer 2            layer 3 (top)
---  |----------------------||-----------------------||-----------------|
---
---   4x TDC_4ch -> buffer -|
---   4x TDC_4ch -> buffer -|\___arbiter__buffer____
---   4x TDC_4ch -> buffer -|/                      \
---   4x TDC_4ch -> buffer -|                        |
---                                                  |
---   4x TDC_4ch -> buffer -|                        |
---   4x TDC_4ch -> buffer -|\___arbiter__buffer_____|
---   4x TDC_4ch -> buffer -|/                       | 
---   4x TDC_4ch -> buffer -|                        |
---                                                  |--------- output
---   4x TDC_4ch -> buffer -|                        |
---   4x TDC_4ch -> buffer -|\___arbiter__buffer_____|
---   4x TDC_4ch -> buffer -|/                       |
---   4x TDC_4ch -> buffer -|                        |
---                                                  |
---   4x TDC_4ch -> buffer -|                        |
---   4x TDC_4ch -> buffer -|\___arbiter__buffer____/
---   4x TDC_4ch -> buffer -|/                           
---   4x TDC_4ch -> buffer -|           
---
+--! \file TDC_64ch_2BRAM.vhd
+--! \brief 64-channel TDC block that writes to a one of two DPBRAM blocks depending on the arrival of an external trigger.
+--! \details A 64-channel TDC module that connects four groups of \ref TDC_4ch.vhd "`TDC_4ch`" modules to 4:1 arbiters,
+--! whose outputs are then connected to intermediate hit storage buffers before being read out by a top level arbiter.
+--! The top level arbiter writes directly to one of two DPBRAM blocks in the PL fabric at the clk0 frequency (212.4 MHz for
+--! nominal SpinQuest operation). Upon arrival of an external trigger, the module switches writing from the original BRAM to
+--! the second BRAM and sends an interrupt to the PS. The PS then sends a read busy signal and fully reads out the non-active
+--! BRAM. An internal counter keeps track of the number of missed triggers (trigger arrived during BRAM readout, currently 
+--! unused). Having two BRAM blocks ensures zero readout deadtime. A block diagram of the setup is given below:
+--!
+--! \verbatim
+--!           layer 1                 layer 2            layer 3 (top)
+--!  |----------------------||-----------------------||-----------------|
+--!
+--!   4x TDC_4ch -> buffer -|
+--!   4x TDC_4ch -> buffer -|\___arbiter --> buffer___
+--!   4x TDC_4ch -> buffer -|/                        \
+--!   4x TDC_4ch -> buffer -|                          |
+--!                                                    |
+--!   4x TDC_4ch -> buffer -|                          |
+--!   4x TDC_4ch -> buffer -|\___arbiter --> buffer____|
+--!   4x TDC_4ch -> buffer -|/                         | 
+--!   4x TDC_4ch -> buffer -|                          |
+--!                                                    |--> arbiter --> output to BRAM
+--!   4x TDC_4ch -> buffer -|                          |
+--!   4x TDC_4ch -> buffer -|\___arbiter --> buffer____|
+--!   4x TDC_4ch -> buffer -|/                         |
+--!   4x TDC_4ch -> buffer -|                          |
+--!                                                    |
+--!   4x TDC_4ch -> buffer -|                          |
+--!   4x TDC_4ch -> buffer -|\___arbiter --> buffer____/
+--!   4x TDC_4ch -> buffer -|/                           
+--!   4x TDC_4ch -> buffer -|           
+--! \endverbatim
+--! 
+--! Since this module makes use of VHDL 2008 (unconstrained SLV arrays), it must be wrapped by 
+--! a VHDL 1993 module, in this case the \ref top_2BRAM.vhd "`top_64ch_2BRAM`" module.
+--! \author Amitav Mitra, amitra3@jhu.edu
 -- ###########################################################################
 -- Top-level TDC design for the 64-channel implementation
 --
@@ -33,56 +46,92 @@ use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 use work.common_types.all;
 
+--! \brief 64-channel TDC block that writes to a one of two DPBRAM blocks depending on the arrival of an external trigger.
+--! \details A 64-channel TDC module that connects four groups of \ref TDC_4ch.vhd "`TDC_4ch`" modules to 4:1 arbiters,
+--! whose outputs are then connected to intermediate hit storage buffers before being read out by a top level arbiter.
+--! The top level arbiter writes directly to one of two DPBRAM blocks in the PL fabric at the clk0 frequency (212.4 MHz for
+--! nominal SpinQuest operation). Upon arrival of an external trigger, the module switches writing from the original BRAM to
+--! the second BRAM and sends an interrupt to the PS. The PS then sends a read busy signal and fully reads out the non-active
+--! BRAM. An internal counter keeps track of the number of missed triggers (trigger arrived during BRAM readout, currently 
+--! unused). A block diagram of the setup is given below:
+--!
+--! \verbatim
+--!           layer 1                 layer 2            layer 3 (top)
+--!  |----------------------||-----------------------||-----------------|
+--!
+--!   4x TDC_4ch -> buffer -|
+--!   4x TDC_4ch -> buffer -|\___arbiter --> buffer___
+--!   4x TDC_4ch -> buffer -|/                        \
+--!   4x TDC_4ch -> buffer -|                          |
+--!                                                    |
+--!   4x TDC_4ch -> buffer -|                          |
+--!   4x TDC_4ch -> buffer -|\___arbiter --> buffer____|
+--!   4x TDC_4ch -> buffer -|/                         | 
+--!   4x TDC_4ch -> buffer -|                          |
+--!                                                    |--> arbiter --> output to BRAM
+--!   4x TDC_4ch -> buffer -|                          |
+--!   4x TDC_4ch -> buffer -|\___arbiter --> buffer____|
+--!   4x TDC_4ch -> buffer -|/                         |
+--!   4x TDC_4ch -> buffer -|                          |
+--!                                                    |
+--!   4x TDC_4ch -> buffer -|                          |
+--!   4x TDC_4ch -> buffer -|\___arbiter --> buffer____/
+--!   4x TDC_4ch -> buffer -|/                           
+--!   4x TDC_4ch -> buffer -|           
+--! \endverbatim
+--! 
+--! Since this module makes use of VHDL 2008 (unconstrained SLV arrays), it must be wrapped by 
+--! a VHDL 1993 module, in this case the \ref top_2BRAM.vhd "`top_64ch_2BRAM`" module.
 entity TDC_64ch is 
     generic (
-        g_chID_start   : natural := 0;
-        g_coarse_bits  : natural := 28;
-        g_sat_duration : natural := 3;  -- Minimum duration (in clk0 periods) that hit must remain high to be considered valid
-        g_pipe_depth   : natural := 5   -- Max number of hits stored in pipeline
+        g_chID_start   : natural := 0;  --! Channel ID of the first TDC channel in the group of 64. Should normally always be 0, so this generic is kind of pointless.
+        g_coarse_bits  : natural := 28; --! Number of bits in the \ref CoarseCounter.vhd "coarse counter"
+        g_sat_duration : natural := 3;  --! Minimum duration (in clk0 periods) that hit must remain high to be considered valid
+        g_pipe_depth   : natural := 5   --! Max number of hits stored in pipeline
     );
     port (
         -- TDC and system clocks sent to all channels
-        clk0    : in std_logic;
-        clk45   : in std_logic;
-        clk90   : in std_logic;
-        clk135  : in std_logic;
-        clk_sys : in std_logic;
+        clk0    : in std_logic; --! 0 degree (212.4 MHz, 4x RF) clock
+        clk45   : in std_logic; --! 45 degree clock
+        clk90   : in std_logic; --! 90 degree clock
+        clk135  : in std_logic; --! 135 degree clock
+        clk_sys : in std_logic; --! RF clock (53.1 MHz)
         -- Control
-        reset   : in std_logic; -- active high
-        enable  : in std_logic; -- active high
+        reset   : in std_logic; --! Active high reset
+        enable  : in std_logic; --! Active high enable
         -- Data input from detector
-        hits    : in std_logic_vector(0 to 63);
-        trigger : in std_logic;
+        hits    : in std_logic_vector(0 to 63); --! 64 discriminator front-end hits
+        trigger : in std_logic;                 --! External trigger signal
         -- PL <--> PS communication
-        rd_busy : in std_logic;    -- PS -> PL indicating read in progress
-        irq_o   : out std_logic;   -- PL -> PS interrupt request
-        which_bram : out std_logic_vector(1 downto 0);  -- tell PS which BRAM is being written to currently
+        rd_busy : in std_logic;                         --! [PS -> PL] PS BRAM read in progress
+        irq_o   : out std_logic;                        --! [PL -> PS] Processor interrupt request
+        which_bram : out std_logic_vector(1 downto 0);  --! [PL -> PS] Tell PS which BRAM is currently being written to
         ---------------------------------------------
         -- DEBUG ILA
         ---------------------------------------------
-        DEBUG_data  : out std_logic_vector(g_coarse_bits+10 downto 0);
-        DEBUG_valid : out std_logic; 
-        DEBUG_grant : out std_logic_vector(3 downto 0);    -- read enable from arbiter to ring buffers
+        DEBUG_data  : out std_logic_vector(g_coarse_bits+10 downto 0);  --! Exposing the top level arbiter data for ILA debug
+        DEBUG_valid : out std_logic;                                    --! Exposing the top level arbiter valid signal for ILA debug
+        DEBUG_grant : out std_logic_vector(3 downto 0);                 --! Exposing the top level read enable signal from arbiter to ring buffers for ILA debug
         ---------------------------------------------
         -- Output to BRAM 1
         ---------------------------------------------
-        BRAM_1_addr_b : out std_logic_vector(31 downto 0);
-        BRAM_1_clk_b  : out std_logic;
-        BRAM_1_rddata_b : in std_logic_vector(63 downto 0);
-        BRAM_1_wrdata_b : out std_logic_vector(63 downto 0);
-        BRAM_1_en_b   : out std_logic;
-        BRAM_1_rst_b  : out std_logic;
-        BRAM_1_we_b   : out std_logic_vector(7 downto 0);
+        BRAM_1_addr_b : out std_logic_vector(31 downto 0);   --! BRAM 1 port B address (byte addressing)
+        BRAM_1_clk_b  : out std_logic;                       --! BRAM 1 port B clock (driven by clk0)
+        BRAM_1_rddata_b : in std_logic_vector(63 downto 0);  --! BRAM 1 port B read data (unused for now - this signal is driven by the BRAM and returns the last value written to BRAM)
+        BRAM_1_wrdata_b : out std_logic_vector(63 downto 0); --! BRAM 1 port B write data
+        BRAM_1_en_b   : out std_logic;                       --! BRAM 1 port B enable
+        BRAM_1_rst_b  : out std_logic;                       --! BRAM 1 port B reset (not actually sure what this does..)
+        BRAM_1_we_b   : out std_logic_vector(7 downto 0)     --! BRAM 1 port B write enable
         ---------------------------------------------
         -- Output to BRAM 2
         ---------------------------------------------
-        BRAM_2_addr_b : out std_logic_vector(31 downto 0);
-        BRAM_2_clk_b  : out std_logic;
-        BRAM_2_rddata_b : in std_logic_vector(63 downto 0);
-        BRAM_2_wrdata_b : out std_logic_vector(63 downto 0);
-        BRAM_2_en_b   : out std_logic;
-        BRAM_2_rst_b  : out std_logic;
-        BRAM_2_we_b   : out std_logic_vector(7 downto 0)
+        BRAM_2_addr_b : out std_logic_vector(31 downto 0);   --! BRAM 2 port B address (byte addressing)
+        BRAM_2_clk_b  : out std_logic;                       --! BRAM 2 port B clock (driven by clk0)
+        BRAM_2_rddata_b : in std_logic_vector(63 downto 0);  --! BRAM 2 port B read data (unused for now - this signal is driven by the BRAM and returns the last value written to BRAM)
+        BRAM_2_wrdata_b : out std_logic_vector(63 downto 0); --! BRAM 2 port B write data
+        BRAM_2_en_b   : out std_logic;                       --! BRAM 2 port B enable
+        BRAM_2_rst_b  : out std_logic;                       --! BRAM 2 port B reset (not actually sure what this does..)
+        BRAM_2_we_b   : out std_logic_vector(7 downto 0)     --! BRAM 2 port B write enable
     );
 end TDC_64ch;
 
@@ -100,62 +149,62 @@ architecture RTL of TDC_64ch is
     --      layer_from_to_purpose_s
     -------------------------------------------------
     -- Layer 1: 16x TDC_4ch modules -> ring buffers -> arbiter
-    signal layer1_tdc_buf_data_s      : SlvArray(0 to 15)(g_coarse_bits+10 downto 0);
-    signal layer1_tdc_buf_valid_s     : std_logic_vector(0 to 15);
-    signal layer1_arb_buf_ren_s       : std_logic_vector(0 to 15);
-    signal layer1_buf_arb_rvalid_s    : std_logic_vector(0 to 15);
-    signal layer1_buf_arb_data_s      : SlvArray(0 to 15)(g_coarse_bits+10 downto 0);
-    signal layer1_buf_arb_empty_s     : std_logic_vector(0 to 15); -- unused
-    signal layer1_buf_arb_emptyNext_s : std_logic_vector(0 to 15); -- unused
-    signal layer1_buf_arb_full_s      : std_logic_vector(0 to 15); -- unused
-    signal layer1_buf_arb_fullNext_s  : std_logic_vector(0 to 15); -- unused
-    signal layer1_buf_arb_fillCount_s : IntArray(0 to 15); -- unused
+    signal layer1_tdc_buf_data_s      : SlvArray(0 to 15)(g_coarse_bits+10 downto 0);   --! TDC_4ch data to L1 ring buffers
+    signal layer1_tdc_buf_valid_s     : std_logic_vector(0 to 15);                      --! TDC_4ch data valid to L1 ring buffers
+    signal layer1_arb_buf_ren_s       : std_logic_vector(0 to 15);                      --! L1 arbiter read enable to L1 buffers
+    signal layer1_buf_arb_rvalid_s    : std_logic_vector(0 to 15);                      --! L1 buffer readout valid signal to L1 arbiter
+    signal layer1_buf_arb_data_s      : SlvArray(0 to 15)(g_coarse_bits+10 downto 0);   --! L1 buffer readout data to L1 arbiter 
+    signal layer1_buf_arb_empty_s     : std_logic_vector(0 to 15);                      --! L1 buffer empty signal to L1 arbiter
+    signal layer1_buf_arb_emptyNext_s : std_logic_vector(0 to 15);                      --! UNUSED
+    signal layer1_buf_arb_full_s      : std_logic_vector(0 to 15);                      --! UNUSED
+    signal layer1_buf_arb_fullNext_s  : std_logic_vector(0 to 15);                      --! UNUSED
+    signal layer1_buf_arb_fillCount_s : IntArray(0 to 15);                              --! UNUSED
     -- Layer 2
-    signal layer2_buf_arb_data_s  : SlvArray(0 to 3)(g_coarse_bits+10 downto 0);
-    signal layer2_buf_arb_valid_s : std_logic_vector(0 to 3);
+    signal layer2_buf_arb_data_s  : SlvArray(0 to 3)(g_coarse_bits+10 downto 0);        --! L1 buffer readout data to L2 arbiter 
+    signal layer2_buf_arb_valid_s : std_logic_vector(0 to 3);                           --! L1 buffer readout valid signal to L2 arbiter
     -- Layer 3
-    signal layer3_arb_buf_rd_en  : std_logic_vector(0 to 3);
-    signal layer3_arb_buf_rvalid : std_logic_vector(0 to 3);
-    signal layer3_buf_arb_data_s : SlvArray(0 to 3)(g_coarse_bits+10 downto 0);
-    signal layer3_buf_arb_empty_s     : std_logic_vector(0 to 3); -- unused
-    signal layer3_buf_arb_emptyNext_s : std_logic_vector(0 to 3); -- unused
-    signal layer3_buf_arb_full_s      : std_logic_vector(0 to 3); -- unused
-    signal layer3_buf_arb_fullNext_s  : std_logic_vector(0 to 3); -- unused
-    signal layer3_buf_arb_fillCount_s : IntArray(0 to 3); -- unused
+    signal layer3_arb_buf_rd_en  : std_logic_vector(0 to 3);                            --! L3 arbiter read enable to L2 ring buffers
+    signal layer3_arb_buf_rvalid : std_logic_vector(0 to 3);                            --! L2 buffer readout valid signal to L3 arbiter
+    signal layer3_buf_arb_data_s : SlvArray(0 to 3)(g_coarse_bits+10 downto 0);         --! L2 buffer readout data signal to L3 arbiter
+    signal layer3_buf_arb_empty_s     : std_logic_vector(0 to 3);                       --! L2 buffer empty signal to L3 arbiter
+    signal layer3_buf_arb_emptyNext_s : std_logic_vector(0 to 3);                       --! UNUSED
+    signal layer3_buf_arb_full_s      : std_logic_vector(0 to 3);                       --! UNUSED
+    signal layer3_buf_arb_fullNext_s  : std_logic_vector(0 to 3);                       --! UNUSED
+    signal layer3_buf_arb_fillCount_s : IntArray(0 to 3);                               --! UNUSED
 
     ------------------------------------------------------------------------
     -- Top-level data signals
     ------------------------------------------------------------------------
-    signal tdc64ch_valid_s : std_logic;
-    signal tdc64ch_valid_s_last : std_logic;
-    signal tdc64ch_data_s  : std_logic_vector(g_coarse_bits+10 downto 0);
-    signal tdc_data_dummy : std_logic_vector(62-(g_coarse_bits+10) downto 0) := (others => '1');
+    signal tdc64ch_valid_s : std_logic;                                                             --! Top level arbiter valid data signal
+    signal tdc64ch_valid_s_last : std_logic;                                                        --! Registered data valid signal
+    signal tdc64ch_data_s  : std_logic_vector(g_coarse_bits+10 downto 0);                           --! Top level arbiter data to BRAM
+    signal tdc_data_dummy : std_logic_vector(62-(g_coarse_bits+10) downto 0) := (others => '1');    --! Dummy bits to append to `tdc64ch_data_s` to reach 64 bits (to comply with AXI standard)
 
     attribute keep of tdc_data_dummy : signal is "true";
     attribute dont_touch of tdc_data_dummy : signal is "true";
     
     -- reduce fanout
-    signal reset_s : std_logic;
-    attribute max_fanout : integer;
-    attribute max_fanout of reset_s  : signal is 55;
+    signal reset_s : std_logic;                         --! Register the reset signal 
+    attribute max_fanout : integer;                     --! Limit the fanout for a given signal or net
+    attribute max_fanout of reset_s  : signal is 55;    --! Limit the fanout of the registered reset signal to meet timing
     
-    signal trig_last  : std_logic;  -- used as trigger 
-    signal busy_last  : std_logic;
-    signal missed_trigs : unsigned(5 downto 0) := (others => '0'); -- also overkill for counting missed triggers
+    signal trig_last  : std_logic;                                  --! Register the trigger signal 
+    signal busy_last  : std_logic;                                  --! Register the busy signal from the PS
+    signal missed_trigs : unsigned(5 downto 0) := (others => '0');  --! Signal to count missed triggers (trigger arrived during PS readout)
     type t_state is (
         s_idle,  -- Waiting for trigger accept, writing data to one of the BRAMs
         s_trigd, -- trigger received, send out interrupt request and wait for busy flag from PS 
         s_busy   -- PS is busy reading from one of the BRAMs, await busy low from PS
     );
     signal state : t_state := s_idle;
-    signal addr  : unsigned(31 downto 0) := (others => '0');
-    signal addr1 : unsigned(31 downto 0) := (others => '0');
-    signal addr2 : unsigned(31 downto 0) := (others => '0');
+    signal addr  : unsigned(31 downto 0) := (others => '0');    --! UNUSED
+    signal addr1 : unsigned(31 downto 0) := (others => '0');    --! BRAM 1 address
+    signal addr2 : unsigned(31 downto 0) := (others => '0');    --! BRAM 2 address
     signal which_bram_s : unsigned(1 downto 0) := "01";
 
 begin
 
-    -- DEBUG 
+    -- Expose top level arbiter outputs for ILA debug  
     DEBUG_data  <= tdc64ch_data_s;
     DEBUG_valid <= tdc64ch_valid_s;
     DEBUG_grant <= layer3_arb_buf_rd_en;
@@ -191,7 +240,7 @@ begin
     -- Connect the 16 TDC_4ch modules to ring buffers
     layer1 : for ch in 0 to 15 generate
     begin 
-        -- First generate 16 TDC_4ch modules..
+        --! First generate 16 `TDC_4ch` modules
         TDC4ch_inst : entity work.TDC_4ch
         generic map (
             g_chID_start   => g_chID_start + (4 * ch),
@@ -211,7 +260,7 @@ begin
             valid_o   => layer1_tdc_buf_valid_s(ch),
             data_o    => layer1_tdc_buf_data_s(ch)
         );
-        -- Now connect the TDC_4ch modules to their hit buffers
+        --! Connect the 16 `TDC_4ch` modules to their hit buffers
         TDC4ch_buf_inst : entity work.ring_buffer
         generic map (
             RAM_WIDTH => g_coarse_bits + 11, -- (N coarse bits) + (6 bit chID) + (5 bit fine)
@@ -244,7 +293,7 @@ begin
     --      2        |    [4 * idx : (4 * idx) + 3] = [8:11]
     --      3        |    [4 * idx : (4 * idx) + 3] = [12:15]
     begin
-        -- First connect layer 1 buffers -> layer 2 arbiters
+        --! Connect layer 1 buffers to layer 2 arbiters
         L2_arb_inst : entity work.rr_arbiter_41
         generic map (
             DWIDTH => g_coarse_bits + 11
@@ -261,7 +310,7 @@ begin
             data_out    => layer2_buf_arb_data_s(idx),
             valid_out   => layer2_buf_arb_valid_s(idx)
         );
-        -- Then connect layer 2 arbiters -> layer 2 buffers
+        --! Connect layer 2 arbiters to layer 2 buffers
         L2_buf_inst : entity work.ring_buffer
         generic map (
             RAM_WIDTH => g_coarse_bits + 11,
@@ -284,7 +333,7 @@ begin
         );
     end generate layer2;
 
-    -- Finally, connect the layer 2 buffers to the final arbiter
+    --! Connect the layer 2 buffers to the final (layer 3) arbiter
     layer3_arbiter : entity work.rr_arbiter_41
     generic map ( DWIDTH => g_coarse_bits + 11 )
     port map (
@@ -298,8 +347,10 @@ begin
         valid_out   => tdc64ch_valid_s  -- final top level output
     );
 
-    -- Store asynchronous busy and trigger signals for one CC, as well as data ready
-    process(all)
+    --! \brief Register signals to enable level detection
+    --! \details Register the reset, PS read busy, trigger, and top level arbiter valid and data signals.
+    --! By registering them, we can track changes in the state which are then used to control the FSM that handles BRAM writes
+    p_register : process(all)
     begin
         if rising_edge(clk0) then
             reset_s   <= reset;
@@ -307,13 +358,19 @@ begin
             trig_last <= trigger;
             tdc64ch_valid_s_last <= tdc64ch_valid_s;
         end if;
-    end process;
+    end process p_register;
 
     -- Wire the selected BRAM ID to output 
     which_bram <= std_logic_vector(which_bram_s);
 
-    -- Handle BRAM writing and switching 
-    process(all)
+    --! \brief Handle BRAM writing and trigger interface
+    --! \details The module continually reads out hits from the 64 TDC channels and writes them to one of two DPBRAM blocks.
+    --! Upon trigger arrival, the current BRAM is disabled and the second BRAM is enabled and the module begins writing hits to it.
+    --! Simultaneously, the module sends an interrupt to the PS as well as the ID of the BRAM being written to currently. The PS
+    --! then asserts a busy flag and fully reads out the original BRAM, deasserting the busy flag when finished. If another trigger
+    --! arrives during the PS readout, this module increments an internal counter to keep track of missed triggers. Because there are 
+    --! two BRAMs available for writing, there is zero readout deadtime. 
+    p_handle_BRAM_rw : process(all)
     begin
         if rising_edge(clk0) then 
             if (reset_s = '1') then 
@@ -427,7 +484,7 @@ begin
                 end case;
             end if;
         end if;
-    end process;
+    end process p_handle_BRAM_rw;
 
     -- Handle byte -> word addressing for both BRAMs
     BRAM_1_addr_b <= std_logic_vector(shift_left(addr1,3));

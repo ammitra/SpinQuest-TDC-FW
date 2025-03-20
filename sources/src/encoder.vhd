@@ -1,78 +1,82 @@
------------------------------------------------------------------------------------
--- encoder.vhd
---
--- Encodes the arrival time of valid hits into a N+11-bit data word
---  * N = g_coarse_bits == length of coarse counter (RF bucket ID)
---  * 11 = (5-bit fine time) + (6-bit channelID)
---
--- V0: 23/09/2024
---  * first version, passed behavioral simulation tests
--- V0.1: 23/09/2024
---  * added valid hit detection (pulse duration requirement set by generic)
--- V0.2: 24/09/2024
---  * handled edge case where hit arrives on rising edge of RF clock
--- V0.3: 09/12/2024
---  * simplified fine counter - no need to calculate true fine time, it gets sent from sampler
--- V0.4: 17/12/2024
---  * fixed state machine logic for saturation duration counting
--- V0.5: 24/02/2025
---  * refactored comb+seq FSMs into one seq FSM to avoid latches
------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------
+--! \file encoder.vhd
+--! \brief Module that encodes the arrival time of valid hits with respect to the RF (coarse) clock.
+--! 
+--! \details The encoder module acts to encode the arrival time of valid hits from the detector front-end into 
+--! N+11 bit-long data words, where `N = g_coarse_bits` == the length of the \ref CoarseCounter.vhd "coarse time counter".
+--! The additional factor of 11 comes from the 11-bit concatenation of (5-bit fine time) & (6-bit channel ID).
+--! The fine time is encoded by a 5-bit value representing one of the 32 0.58ns time intervals making up the RF clock period.
+--! 
+--! \author Amitav Mitra, amitra3@jhu.edu
+---------------------------------------------------------------------------------------------------------
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
+--! Use bitSize() function
 use work.common_types.all;
 
+--! \brief Module that encodes the arrival time of valid hits with respect to the RF (coarse) clock.
+--! 
+--! \details The encoder module acts to encode the arrival time of valid hits from the detector front-end into 
+--! N+11 bit-long data words, where `N = g_coarse_bits` == the length of the \ref CoarseCounter.vhd "coarse time counter".
+--! The additional factor of 11 comes from the 11-bit concatenation of (5-bit fine time) & (6-bit channel ID).
+--! The fine time is encoded by a 5-bit value representing one of the 32 0.58ns time intervals making up the RF clock period.
 entity encoder is
     generic (
-        g_coarse_bits : natural := 28;
-        g_channel_id  : natural := 0;
-        g_sat_duration : natural range 1 to 5 := 3   -- number of clk_0 cycles the signal needs to be saturated to be considered valid
+        g_coarse_bits : natural := 28;  --! Number of bits making up the \ref CoarseCounter.vhd "coarse time counter".
+        g_channel_id  : natural := 0;   --! Channel ID (number from 0-63).
+        g_sat_duration : natural range 1 to 5 := 3   --! number of clk_0 cycles the signal needs to remain high to be considered valid
     );
     port (
-        clk_0       : in std_logic; -- 4x RF clock 0degree phase
-        fine_i      : in std_logic_vector(9 downto 0);  -- [9:2] are hit pattern [1:0] are fine counter
-        reset_i     : in std_logic;
-        coarse_i    : in std_logic_vector(g_coarse_bits-1 downto 0);
-        timestamp_o : out std_logic_vector(g_coarse_bits+10 downto 0);   -- (coarse) + [ (5-bit fine) + (6-bit channel id) ] - 1
-        valid_o     : out std_logic
+        clk_0       : in std_logic;                                     --! 0-degree phase MMCM output clock
+        fine_i      : in std_logic_vector(9 downto 0);                  --! Bits [9:2] are the \ref sampler.vhd "sampler" hit pattern and bits [1:0] are the clk_0 period counter
+        reset_i     : in std_logic;                                     --! Active high reset
+        coarse_i    : in std_logic_vector(g_coarse_bits-1 downto 0);    --! \ref CoarseCounter.vhd "Coarse time counter" value
+        timestamp_o : out std_logic_vector(g_coarse_bits+10 downto 0);  --! Timestamp formed by (coarse time) + [ (5-bit fine time) + (6-bit channel id) ] - 1
+        valid_o     : out std_logic                                     --! Output pulse sent when valid fine time is encoded
     );
 end encoder;
 
 architecture Behavioral of encoder is
 
     -- Preserve architecture
-    attribute keep_hierarchy : string;
-    attribute keep : string;
-    attribute dont_touch : string;
-    attribute keep_hierarchy of Behavioral : architecture is "true";
+    attribute keep_hierarchy : string;  --! <a href="https://docs.amd.com/r/en-US/ug912-vivado-properties/KEEP_HIERARCHY">KEEP_HIERARCHY</a>
+    attribute keep : string;            --! <a href="https://docs.amd.com/r/en-US/ug912-vivado-properties/KEEP">KEEP</a>
+    attribute dont_touch : string;      --! <a href="https://docs.amd.com/r/en-US/ug912-vivado-properties/DONT_TOUCH">DONT_TOUCH</a>
+    attribute keep_hierarchy of Behavioral : architecture is "true"; --! Prevent optimization from occurring across boundary of this hierarchy.
 
-    -- Signals for the current and previous input from sampler module
-    signal fine_last  : std_logic_vector(9 downto 0);
-    --signal fine_count : std_logic_vector(1 downto 0);
-    -- signals for checking if output is valid 
+    signal fine_last  : std_logic_vector(9 downto 0);   --! Signal to register the previous input from the \ref sampler.vhd "sampler" module.
+
+    --! State governing the status of the encoder while waiting for the sampler to fully saturate
     type t_state is (
-        IDLE,   -- sampler is not saturated, waiting 
-        READY,  --
-        DONE
+        IDLE,   -- Sampler is not saturated, waiting for a hit to arrive
+        READY,  -- Sampler has been saturated for `g_sat_duration` `clk_0` periods
+        DONE    -- Sampler has been saturated for long enough, wait for hit pulse to go low before sending the encoded data for further processing
     );
     signal state : t_state;
+
+    --! Keeps track of how many clk_0 periods the hit has been high for (saturates the sampler)
     signal saturation_counter : unsigned(bitSize(g_sat_duration)-1 downto 0);
-    signal hit_finished : std_logic;
-    signal is_saturated : std_logic;
-    -- Signals for output 
-    --signal valid_s : std_logic;
-    signal encoded_fine_time : std_logic_vector(4 downto 0);
-    -- Signals for the fine period calculation
+    signal hit_finished : std_logic;    --! Hit signal has gone low:                        fine_i[9:2] => '0'
+    signal is_saturated : std_logic;    --! Hit signal is high and sampler is saturated:    fine_i[9:2] => '1'
+
+    --! 5-bit encoded fine time representing which of the 32 time divisions in an RF clock period the hit arrived during.
+    signal encoded_fine_time : std_logic_vector(4 downto 0); 
+
+    --! The fine period (0-3) in which the hit arrived that is sent directly from the sampler
     signal true_fine_period : unsigned(1 downto 0);
-    -- Signals for coarse time calculation
+
+    --! The actual coarse period the hit arrived during. Prevents hits arriving near the end of an RF clock period from being attributed to the wrong RF bucket
     signal true_coarse_period : std_logic_vector(g_coarse_bits-1 downto 0);
+    --! Register the incoming coarse time from the coarse counter.
     signal coarse_s : std_logic_vector(g_coarse_bits-1 downto 0);
-    signal g_channel_id_s : std_logic_vector(5 downto 0);   -- 6 bit channel ID
-    attribute keep of g_channel_id_s : signal is "true";
-    attribute dont_touch of g_channel_id_s : signal is "true";
+
+    -- I don't think this is actually necessary. Feel free to remove and just uncomment the line in process p_is_valid()
+    signal g_channel_id_s : std_logic_vector(5 downto 0);       --! 6 bit channel ID as an STD_LOGIC_VECTOR
+    attribute keep of g_channel_id_s : signal is "true";        --! Prevent the signal from being optimized away during synthesis.
+    attribute dont_touch of g_channel_id_s : signal is "true";  --! Prevent the signal from being optimized away during synthesis.
 
 
 begin
@@ -80,7 +84,7 @@ begin
     -- Assign the channel ID signal the proper value based on the generic 
     g_channel_id_s <= std_logic_vector(to_unsigned(g_channel_id, 6));
 
-    -- Shift the hit patterns from the previous clock cycle in
+    --! \brief Register the coarse time counter, fine time hit pattern, and clk_0 period counter signals.
     p_shift : process(all)
     begin 
         if rising_edge(clk_0) then
@@ -91,7 +95,12 @@ begin
         end if;
     end process p_shift;
     
-    -- FSM for determining hit validity based on input pulse duration
+    --! \brief FSM for determining hit validity based on input pulse duration.
+    --! \details The FSM has three different states: IDLE, READY, and DONE. 
+    --! These states correspond to the status of the sampler, which is recording the hit pattern from the front-end electronics. 
+    --! <br> * IDLE: Sampler is not saturated, waiting for a hit to arrive
+    --! <br> * READY: Sampler has been saturated for `g_sat_duration` `clk_0` periods
+    --! <br> * DONE: Sampler has been saturated for long enough, wait for hit pulse to go low before sending the encoded data for further processing
     p_is_valid : process(all)
     begin 
         if rising_edge(clk_0) then 
@@ -135,7 +144,13 @@ begin
         end if;
     end process p_is_valid;
 
-    -- Encode the fine arrival time of the hit within the coarse (RF) clock period. The fine time will be encoded by a 5-bit value representing one of the 32 0.58ns time intervals making up the RF clock period.
+    --! \brief Encode the fine arrival time of the hit within the coarse (RF) clock period. 
+    --! \details The fine time will be encoded by a 5-bit value representing one of the 32 0.58ns time intervals making up the RF clock period.
+    --! To implement this, we use a lookup table that checks the hit pattern from the sampler (`fine_i[9:2]`) at the current and previous clk_0 
+    --! cycle, the clk_0 period during which the hit arrived (`true_fine_period`), and the coarse (RF) clock period during which the hit arrived.
+    --! Some logic is performed to ensure that hits arriving near the end of the RF clock period are not mistakenly attributed to the next RF bucket.
+    --! There is also treatment of the edge case where the hit arrives exactly on the rising edge of the RF clock, which would otherwise lead to the 
+    --! hit being erroneously attributed to the previous RF bucket.
     p_encode : process(all)
     begin 
         if rising_edge(clk_0) then

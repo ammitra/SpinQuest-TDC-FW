@@ -1,40 +1,44 @@
------------------------------------------------------------------------------------
--- ring_buffer.vhd
---
--- Circular (ring) buffer of configurable depth and width. Taken from VHDLwhiz:
--- https://vhdlwhiz.com/ring-buffer-fifo/
---
------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------
+--! \file ring_buffer.vhd
+--! \brief Circular (ring) buffer of configurable depth and width.
+--! 
+--! \details Ring buffer used as intermediate hit buffers between data producers (TDC channels) and arbiters. This module communicates with the 
+--! arbiters to request access to a shared resource in which to write the stored hit information. This module was taken directly from <a href="https://vhdlwhiz.com/ring-buffer-fifo/">vhdlwiz.com.</a>
+--! \author Jonas Julian Jensen, jonas@vhdlwhiz.com
+---------------------------------------------------------------------------------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;
-  
+
+--! \brief Circular (ring) buffer of configurable depth and width.
+--! 
+--! \details Ring buffer used as intermediate hit buffers between data producers (TDC channels) and arbiters. This module communicates with the 
+--! arbiters to request access to a shared resource in which to write the stored hit information. This module was taken directly from <a href="https://vhdlwhiz.com/ring-buffer-fifo/">vhdlwiz.com.</a>
 entity ring_buffer is
   generic (
-    RAM_WIDTH : natural;
-    RAM_DEPTH : natural
+    RAM_WIDTH : natural;  --! Width of the data in the buffer
+    RAM_DEPTH : natural   --! Depth of the ring buffer
   );
   port (
-    clk : in std_logic;
-    rst : in std_logic;
+    clk : in std_logic;   --! Input clock
+    rst : in std_logic;   --! Active high reset
   
     -- Write port
-    wr_en : in std_logic;
-    wr_data : in std_logic_vector(RAM_WIDTH - 1 downto 0);
+    wr_en : in std_logic;                                   --! Write enable from data producer to ring buffer.
+    wr_data : in std_logic_vector(RAM_WIDTH - 1 downto 0);  --! Data sent from producer to ring buffer.
   
     -- Read port
-    rd_en : in std_logic;
-    rd_valid : out std_logic;
-    rd_data : out std_logic_vector(RAM_WIDTH - 1 downto 0);
+    rd_en : in std_logic;                                   --! Read enable from arbiter to ring buffer.
+    rd_valid : out std_logic;                               --! Read valid from buffer to arbiter. Indicates that read enable was received.
+    rd_data : out std_logic_vector(RAM_WIDTH - 1 downto 0); --! Data sent from end of buffer to arbiter. 
   
     -- Flags
-    empty : out std_logic;
-    empty_next : out std_logic;
-    full : out std_logic;
-    full_next : out std_logic;
+    empty : out std_logic;        --! High if buffer is empty, low otherwise. Used by arbiter to indicate a request to write to shared memory.
+    empty_next : out std_logic;   --! High if buffer will be empty after next read transaction (currently unused).
+    full : out std_logic;         --! High if buffer is full, low otherwise (currently unused).
+    full_next : out std_logic;    --! High if buffer will be full after next write transaction (currently unused).
   
-    -- The number of elements in the FIFO
-    fill_count : out integer range RAM_DEPTH - 1 downto 0
+    fill_count : out integer range RAM_DEPTH - 1 downto 0     --! The number of data words in the FIFO (currently unused).
   );
 end ring_buffer;
   
@@ -52,7 +56,7 @@ architecture rtl of ring_buffer is
   signal full_i : std_logic;
   signal fill_count_i : integer range RAM_DEPTH - 1 downto 0;
   
-  -- Increment and wrap
+  --! \brief Increment and wrap the index signal.
   procedure incr(signal index : inout index_type) is
   begin
     if index = index_type'high then
@@ -75,7 +79,7 @@ begin
   full_i <= '1' when fill_count_i >= RAM_DEPTH - 1 else '0';
   full_next <= '1' when fill_count_i >= RAM_DEPTH - 2 else '0';
   
-  -- Update the head pointer in write
+  --! \brief Update the head pointer after a write transaction, if not full.
   PROC_HEAD : process(all)
   begin
     if rising_edge(clk) then
@@ -91,7 +95,7 @@ begin
     end if;
   end process;
   
-  -- Update the tail pointer on read and pulse valid
+  --! \brief Update the tail pointer on arbiter read and pulse valid
   PROC_TAIL : process(all)
   begin
     if rising_edge(clk) then
@@ -110,7 +114,7 @@ begin
     end if;
   end process;
   
-  -- Write to and read from the RAM
+  --! \brief Write to and read from the RAM
   PROC_RAM : process(all)
   begin
     if rising_edge(clk) then
@@ -119,7 +123,7 @@ begin
     end if;
   end process;
   
-  -- Update the fill count
+  --! \brief Update the fill count
   PROC_COUNT : process(all)
   begin
     if head < tail then

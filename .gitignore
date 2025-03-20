@@ -97,3 +97,7 @@ _info
 **.qdb
 **.qpg
 **.qtl
+
+# Doxygen
+html/
+latex/

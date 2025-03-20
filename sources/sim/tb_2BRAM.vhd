@@ -8,7 +8,7 @@ end test_2BRAM;
 
 architecture Behavioral of test_2BRAM is
 
-    -- Procedure for clock generation 
+    -- clock generation
     procedure clk_gen(signal clk : out std_logic; constant FREQ : real; PHASE : time := 1 ns) is
         constant PERIOD    : time := 1 sec / FREQ;        -- Full period
         constant HIGH_TIME : time := PERIOD / 2;          -- High time

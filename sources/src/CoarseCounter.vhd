@@ -1,27 +1,45 @@
------------------------------------------------------------------------------------
--- CoarseCounter.vhd
---
--- User-configurable counter synced to RF clock. Optional (unused) heartbeat pulse
--- can be sent at the end of 2^(g_coarse_bits) RF clock cycles, indicating end of 
--- counter.
---
--- V0: 23/09/2024
---  * first version, passed behavioral simulation tests
------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------
+--! \file CoarseCounter.vhd
+--! \brief Module that produces a counter running at a given frequency.
+--! 
+--! User-configurable counter synced to RF clock. Optional (unused) heartbeat pulse
+--! can be sent at the end of `2^(g_coarse_bits)\f` RF clock cycles, indicating end of 
+--! counter. This module is used to generate the coarse time, aligned with a given RF bucket.
+--! The generic `g_coarse_bits` sets the length of the counter and thus the dynamic time range.
+--! The default value of `g_coarse_bits = 28`, running at 53.1 MHz, yields a dynamic range of ~5s, 
+--! which covers the duration of a typical spill.
+--! 
+--! \author Amitav Mitra, amitra3@jhu.edu
+---------------------------------------------------------------------------------------------------------
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
+--! \brief Module that produces a counter running at a given frequency.
+--!
+--! \details User-configurable counter synced to RF clock. Optional (unused) heartbeat pulse
+--! can be sent at the end of `2^(g_coarse_bits)\f` RF clock cycles, indicating end of 
+--! counter. This module is used to generate the coarse time, aligned with a given RF bucket.
+--! The generic `g_coarse_bits` sets the length of the counter and thus the dynamic time range.
+--! The default value of `g_coarse_bits = 28`, running at 53.1 MHz, yields a dynamic range of ~5s, 
+--! which covers the duration of a typical spill.
+--! 
+--! \param g_coarse_bits    Number of bits in the counter. Depending on `clk_RF` frequency, sets the time range of the counter.
+--! \param clk_RF           RF clock input
+--! \param reset_i          Active high reset
+--! \param heartbeat_o      Pulse sent out when the counter overflows, indicating end of counter. (Unused, useful for streaming DAQ)
+--! \param coarse_o         Counter value output
+--! 
 entity CoarseCounter is
     generic (
-        g_coarse_bits : natural := 28
+        g_coarse_bits : natural := 28   --! Number of bits in the counter 
     );
     port (
-        clk_RF      : in std_logic;     -- 53.1 MHz RF clock 
-        reset_i     : in std_logic;     -- active high
-        heartbeat_o : out std_logic;    -- signifies the end of the counter (unused)
-        coarse_o    : out std_logic_vector(g_coarse_bits-1 downto 0)
+        clk_RF      : in std_logic;     --! 53.1 MHz RF clock 
+        reset_i     : in std_logic;     --! Active high reset
+        heartbeat_o : out std_logic;    --! Signifies the end of the counter (unused)
+        coarse_o    : out std_logic_vector(g_coarse_bits-1 downto 0)    --! Counter value output
     );
 end CoarseCounter;
 

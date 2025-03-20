@@ -1,3 +1,9 @@
+---------------------------------------------------------------------------------------------------------
+--! \file tb_1BRAM.vhd
+--! \brief Testbench for the 64 channel TDC implementation which writes to one BRAM only.
+--! \author Amitav Mitra, amitra3@jhu.edu
+---------------------------------------------------------------------------------------------------------
+
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
@@ -8,11 +14,24 @@ end test_1BRAM;
 
 architecture Behavioral of test_1BRAM is
 
-    -- Procedure for clock generation 
-    procedure clk_gen(signal clk : out std_logic; constant FREQ : real; PHASE : time := 1 ns) is
-        constant PERIOD    : time := 1 sec / FREQ;        -- Full period
-        constant HIGH_TIME : time := PERIOD / 2;          -- High time
-        constant LOW_TIME  : time := PERIOD - HIGH_TIME;  -- Low time; always >= HIGH_TIME
+    --! Procedure for generating a clock signal of a given frequency and phase.
+    --! Used in this testbench to generate an input clock signal to the MMCM clk_wiz_0 component
+    --! 
+    --! \param CLK      Signal that will act as the desired clock.
+    --! \param FREQ     Desired frequency for the generated clock.
+    --! \param PHASE    Phase offset for the clock.
+    --! 
+    --! **Example:**
+    --! ```vhdl
+    --! signal clk_rf   : std_logic;        -- The signal used as a clock
+    --! constant freq   : real := 50.000E6; -- 50 MHz
+    --! constant phase  : time := 0 ns;     -- No phase offset
+    --! clk_gen(clk_rf, freq, phase);
+    --! ```
+    procedure clk_gen(signal CLK : out std_logic; constant FREQ : real; PHASE : time := 1 ns) is
+        constant PERIOD    : time := 1 sec / FREQ;        --! Full period
+        constant HIGH_TIME : time := PERIOD / 2;          --! High time
+        constant LOW_TIME  : time := PERIOD - HIGH_TIME;  --! Low time; always >= HIGH_TIME
     begin
         report "clk started";
         -- Check the arguments
@@ -27,7 +46,7 @@ architecture Behavioral of test_1BRAM is
             wait for LOW_TIME;
         end loop;
     end procedure;
-    
+        
     component clk_wiz_0 is
         port (
             clk_in1  : in std_logic;
@@ -38,42 +57,43 @@ architecture Behavioral of test_1BRAM is
             clk_out4 : out std_logic;
             locked   : out std_logic
         );
-        end component;
+    end component;
     
-    
-        -- clocking
-        signal clk_sys : std_logic;
-        signal clk0    : std_logic;
-        signal clk45   : std_logic;
-        signal clk90   : std_logic;
-        signal clk135  : std_logic;
-        -- control
-        signal reset  : std_logic := '1';
-        signal locked : std_logic;
-        -- UUT
-        signal hits : std_logic_vector(0 to 63) := (others => '0');
-        signal trig : std_logic := '0';
-        signal busy : std_logic := '0';
-        signal irq  : std_logic;
-        signal which_bram : std_logic_vector(1 downto 0);
-        signal BRAM_1_addr_b   : std_logic_vector(31 downto 0);
-        signal BRAM_1_clk_b    : std_logic;
-        signal BRAM_1_rddata_b : std_logic_vector(63 downto 0);
-        signal BRAM_1_wrdata_b : std_logic_vector(63 downto 0);
-        signal BRAM_1_en_b     : std_logic;
-        signal BRAM_1_rst_b    : std_logic;
-        signal BRAM_1_we_b     : std_logic_vector(7 downto 0);
-    
-        -- clock periods
-        constant tdc_pd : time := 1 sec / 212.400E6;
-        constant sys_pd : time := 1 sec / 53.100E6;
-    
-    
+    signal clk_sys : std_logic; --! Signal representing the RF clock. Used as input to the MMCM component
+    signal clk0    : std_logic; --! 0-degree phase-shifted output clock from MMCM
+    signal clk45   : std_logic; --! 45-degree phase-shifted output clock from MMCM
+    signal clk90   : std_logic; --! 90-degree phase-shifted output clock from MMCM
+    signal clk135  : std_logic; --! 135-degree phase-shifted output clock from MMCM
 
+    signal reset  : std_logic := '1';   --! Reset signal sent to MMCM and TDC_64ch
+    signal locked : std_logic;          --! Locked signal sent from MMCM to TDC_64ch enable
+
+    signal hits : std_logic_vector(0 to 63) := (others => '0'); --! External hits sent to TDC_64ch
+    signal trig : std_logic := '0';                             --! External trigger sent to TDC_64ch
+    signal busy : std_logic := '0';                             --! PS -> PL read busy signal
+    signal irq  : std_logic;                                    --! PL -> PS rising-edge triggered interrupt
+    signal which_bram : std_logic_vector(1 downto 0);           --! PL -> PS signal indicating which BRAM is *currently* being written to
+    signal BRAM_1_addr_b   : std_logic_vector(31 downto 0);     --! BRAM 1 port B address signal. Byte-addressed
+    signal BRAM_1_clk_b    : std_logic;                         --! BRAM 1 port B clock. Should be running at 212.4 MHz (clk0)
+    signal BRAM_1_rddata_b : std_logic_vector(63 downto 0);     --! BRAM 1 port B read data. Not used in this testbench. In actual design, reports the value last written on port B.
+    signal BRAM_1_wrdata_b : std_logic_vector(63 downto 0);     --! BRAM 1 port B write data. 64-bit TDC data 
+    signal BRAM_1_en_b     : std_logic;                         --! BRAM 1 port B enable. Always high for the 1 BRAM implementation unless reset active 
+    signal BRAM_1_rst_b    : std_logic;                         --! BRAM 1 port B reset.
+    signal BRAM_1_we_b     : std_logic_vector(7 downto 0);      --! BRAM 1 port B write enable. Pulses high when arbiter receives valid data.
+
+    -- clock periods
+    constant tdc_pd : time := 1 sec / 212.400E6;    --! clk0 period = 1 / 212.4 MHz ~= 4.71 ns
+    constant sys_pd : time := 1 sec / 53.100E6;     --! RF clock period = 1 / 53.1 MHz ~= 18.83 ns
+    
 begin
 
-    clk_gen(clk_sys, 53.100E6, 0 ns);
+    clk_gen(clk_sys, 53.100E6, 0 ns); 
     
+    --! MMCM IP from the Xilinx clocking wizard.
+
+    --! This IP is specifically added to the project for this testbench and is different from the one instantiated in the block design.
+    --! It is configured to take an input clock of 53.1 MHz and output four 212.4 MHz clocks, each phase-shifted 45 degrees from each other.
+    --! It is therefore used to test the 64 channel implementation writing to BRAM at 212.4 MHz.
     mmcm : clk_wiz_0
     port map (
         reset    => reset, 
@@ -85,11 +105,15 @@ begin
         clk_out4 => clk135
     );
     
+    --! 64-channel TDC entity instantiation 
+
+    --! This is the 64-channel TDC entity that writes to only one BRAM. This entity is described using VHDL 2008 and 
+    --! must therefore be wrapped by a VHDL 93 file in order to be used in the block design. See, e.g. \ref top_1BRAM.vhd "`sources/src/top_1BRAM.vhd`". 
     uut : entity work.TDC_64ch_1BRAM
     generic map (
         g_chID_start   => 0,      -- Channel ID of the lowest channel in the group of 16
         g_coarse_bits  => 28,     -- Number of coarse bits to use 
-        g_sat_duration => 3,      -- Number of 0deg clock cycles signal must be high to be valid
+        g_sat_duration => 3,      -- Number of clk0 cycles hit must remain high to be digitized
         g_pipe_depth   => 5       -- Number of hits stored in the intermediate buffers
     )
     port map (

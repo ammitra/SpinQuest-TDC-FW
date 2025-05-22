@@ -23,6 +23,8 @@ IP/*/*
 
 #BD/*
 #!BD/*.bd
+BD/*/*.bda
+BD/*/ip*
 
 ## OS
 .DS_Store

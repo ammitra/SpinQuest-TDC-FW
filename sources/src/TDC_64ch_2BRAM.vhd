@@ -121,7 +121,7 @@ entity TDC_64ch is
         BRAM_1_wrdata_b : out std_logic_vector(63 downto 0); --! BRAM 1 port B write data
         BRAM_1_en_b   : out std_logic;                       --! BRAM 1 port B enable
         BRAM_1_rst_b  : out std_logic;                       --! BRAM 1 port B reset (not actually sure what this does..)
-        BRAM_1_we_b   : out std_logic_vector(7 downto 0)     --! BRAM 1 port B write enable
+        BRAM_1_we_b   : out std_logic_vector(7 downto 0);    --! BRAM 1 port B write enable
         ---------------------------------------------
         -- Output to BRAM 2
         ---------------------------------------------

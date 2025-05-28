@@ -20,7 +20,7 @@ entity design_64ch_2BRAM_wrapper is
 end design_64ch_2BRAM_wrapper;
 
 architecture STRUCTURE of design_64ch_2BRAM_wrapper is
-  component design_1 is
+  component design_64ch_2BRAM is
   port (
     trigger : in STD_LOGIC;
     tdc_hit : in STD_LOGIC_VECTOR ( 0 to 0 )

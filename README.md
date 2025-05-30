@@ -20,7 +20,6 @@ SpinQuest-TDC-FW$ tree -dL 2
 ├── IP
 ├── README.md
 ├── sources
-├── sources
 │   ├── sdc
 │   ├── sim
 │   ├── src

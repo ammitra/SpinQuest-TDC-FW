@@ -84,6 +84,10 @@ use work.common_types.all;
 --! a VHDL 1993 module, in this case the \ref top_2BRAM.vhd "`top_64ch_2BRAM`" module.
 entity TDC_64ch is 
     generic (
+        GLOBAL_DATE    : std_logic_vector(31 downto 0) := (others => '0');
+        GLOBAL_TIME    : std_logic_vector(31 downto 0) := (others => '0');
+        GLOBAL_VER     : std_logic_vector(31 downto 0) := (others => '0');
+        GLOBAL_SHA     : std_logic_vector(31 downto 0) := (others => '0');
         g_chID_start   : natural := 0;  --! Channel ID of the first TDC channel in the group of 64. Should normally always be 0, so this generic is kind of pointless.
         g_coarse_bits  : natural := 28; --! Number of bits in the \ref CoarseCounter.vhd "coarse counter"
         g_sat_duration : natural := 3;  --! Minimum duration (in clk0 periods) that hit must remain high to be considered valid
@@ -202,7 +206,20 @@ architecture RTL of TDC_64ch is
     signal addr2 : unsigned(31 downto 0) := (others => '0');    --! BRAM 2 address
     signal which_bram_s : unsigned(1 downto 0) := "01";
 
+    -- HOG generics 
+    signal GLOBAL_DATE_s : std_logic_vector(31 downto 0);
+    signal GLOBAL_TIME_s : std_logic_vector(31 downto 0);
+    signal GLOBAL_VER_s  : std_logic_vector(31 downto 0);
+    signal GLOBAL_SHA_s  : std_logic_vector(31 downto 0);
+    
+
 begin
+
+    -- Get the HOG generics 
+    GLOBAL_DATE_s <= GLOBAL_DATE;
+    GLOBAL_TIME_s <= GLOBAL_TIME;
+    GLOBAL_VER_s  <= GLOBAL_VER;
+    GLOBAL_SHA_s  <= GLOBAL_SHA;
 
     -- Expose top level arbiter outputs for ILA debug  
     DEBUG_data  <= tdc64ch_data_s;

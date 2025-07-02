@@ -11,6 +11,10 @@ use work.common_types.all;
 
 entity top_64ch_2BRAM is 
     generic (
+        GLOBAL_DATE    : std_logic_vector(31 downto 0) := (others => '0');
+        GLOBAL_TIME    : std_logic_vector(31 downto 0) := (others => '0');
+        GLOBAL_VER     : std_logic_vector(31 downto 0) := (others => '0');
+        GLOBAL_SHA     : std_logic_vector(31 downto 0) := (others => '0');
         g_chID_start   : natural := 0;
         g_coarse_bits  : natural := 28;
         g_sat_duration : natural := 3;  -- Minimum duration (in clk0 periods) that hit must remain high to be considered valid
@@ -107,6 +111,10 @@ begin
 
     e_tdc_64ch : entity work.TDC_64ch
     generic map (
+        GLOBAL_DATE    => GLOBAL_DATE,
+        GLOBAL_TIME    => GLOBAL_TIME,
+        GLOBAL_VER     => GLOBAL_VER,
+        GLOBAL_SHA     => GLOBAL_SHA,
         g_chID_start   => g_chID_start,
         g_coarse_bits  => g_coarse_bits,
         g_sat_duration => g_sat_duration,

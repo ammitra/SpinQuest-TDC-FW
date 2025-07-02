@@ -1,21 +1,21 @@
-# Package with useful types [VHDL 2008]
+# Wrapper for the Zynq PS BD
+BD/TDC_64ch_2BRAM/ZynqPS_wrapper.vhd 93
+
+# Library [VHDL 2008]
 sources/src/common_types.vhd 
 
-# Base modules for TDC channels [VHDL 2008]
+# TDC components
+sources/src/CoarseCounter.vhd 
 sources/src/sampler.vhd 
 sources/src/encoder.vhd 
-sources/src/CoarseCounter.vhd 
+sources/src/TDC_channel.vhd 
 sources/src/ring_buffer.vhd 
 sources/src/rr_arbiter_41.vhd 
-
-# TDC channel blocks [VHDL 2008]
-sources/src/TDC_channel.vhd 
 sources/src/TDC_4ch.vhd 
+
+# TDC and wrapper
 sources/src/TDC_64ch_2BRAM.vhd 
+sources/src/top_2BRAM.vhd 
 
-# Vivado block designs do not support VHDL 2008 modules, so we wrap the above top-level in VHDL 93
-# This 64 channel TDC module also adds the BRAM bus interfaces via Xilinx attributes
-sources/src/top_2BRAM.vhd 93
-
-# Block design HDL wrapper [VHDL 1993]
-sources/top/design_64ch_2BRAM_wrapper.vhd top=design_64ch_2BRAM_wrapper 93
+# Top level design, connects ZynqPS BD with TDC wrapper
+sources/top/top_2BRAM.vhd top=top 93

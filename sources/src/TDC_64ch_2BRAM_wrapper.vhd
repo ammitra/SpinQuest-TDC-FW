@@ -1,5 +1,5 @@
 ---------------------------------------------------------------------------------------------------------
---! \file top_2BRAM.vhd
+--! \file TDC_64ch_2BRAM_wrapper.vhd
 --! \brief Wrapper around the top-level 64 channel (2 BRAMs) TDC module since VHDL 2008 is not compatible with block design
 --! \author Amitav Mitra, amitra3@jhu.edu
 ---------------------------------------------------------------------------------------------------------
@@ -9,7 +9,8 @@ use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 use work.common_types.all;
 
-entity top_64ch_2BRAM is 
+
+entity TDC_64ch_2BRAM_wrapper is 
     generic (
         GLOBAL_DATE    : std_logic_vector(31 downto 0) := (others => '0');
         GLOBAL_TIME    : std_logic_vector(31 downto 0) := (others => '0');
@@ -64,9 +65,9 @@ entity top_64ch_2BRAM is
         BRAM_2_rst_b  : out std_logic;
         BRAM_2_we_b   : out std_logic_vector(7 downto 0)
     );
-end top_64ch_2BRAM;
+end TDC_64ch_2BRAM_wrapper;
 
-architecture RTL of top_64ch_2BRAM is
+architecture RTL of TDC_64ch_2BRAM_wrapper is
 
     ----------------------------------------------------------------------------
     -- Set up bus interface in RTL directly to avoid needing to use IP packager

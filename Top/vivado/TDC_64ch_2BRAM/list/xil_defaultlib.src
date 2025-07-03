@@ -15,7 +15,7 @@ sources/src/TDC_4ch.vhd
 
 # TDC and wrapper (the wrapper must be VHDL 93)
 sources/src/TDC_64ch_2BRAM.vhd 
-sources/src/top_2BRAM.vhd 93
+sources/src/TDC_64ch_2BRAM_wrapper.vhd 93
 
 # Top level design, connects ZynqPS BD with TDC wrapper
 sources/top/top_2BRAM.vhd top=top 93

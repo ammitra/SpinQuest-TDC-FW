@@ -21,7 +21,7 @@ end top;
 
 architecture structure of top is 
     --The 64 channel TDC module
-    component top_64ch_2BRAM is
+    component TDC_64ch_2BRAM_wrapper is
     generic (
         GLOBAL_DATE    : std_logic_vector(31 downto 0);
         GLOBAL_TIME    : std_logic_vector(31 downto 0);
@@ -63,7 +63,7 @@ architecture structure of top is
         BRAM_2_rst_b    : out std_logic;
         BRAM_2_we_b     : out std_logic_vector(7 downto 0)
     );
-    end component top_64ch_2BRAM;
+    end component TDC_64ch_2BRAM_wrapper;
     -- The Zynq PS
     component ZynqPS_wrapper is
     port (
@@ -94,6 +94,8 @@ architecture structure of top is
     );
     end component ZynqPS_wrapper;
     
+    attribute dont_touch : string;
+
     -- Signals
     -- BRAM
     signal BRAM_1_B_addr_s : STD_LOGIC_VECTOR ( 31 downto 0 );
@@ -131,6 +133,32 @@ architecture structure of top is
     signal DEBUG_data_s : std_logic_vector(38 downto 0);
     signal DEBUG_valid_s : std_logic;
     signal DEBUG_grant_s : std_logic_vector(3 downto 0);
+
+    -- Prevent optimizations
+    attribute dont_touch of BRAM_1_B_addr_s : signal is "true";
+    attribute dont_touch of BRAM_1_B_clk_s : signal is "true";
+    attribute dont_touch of BRAM_1_B_din_s : signal is "true";
+    attribute dont_touch of BRAM_1_B_dout_s : signal is "true";
+    attribute dont_touch of BRAM_1_B_en_s : signal is "true";
+    attribute dont_touch of BRAM_1_B_rst_s : signal is "true";
+    attribute dont_touch of BRAM_1_B_we_s : signal is "true";
+    attribute dont_touch of BRAM_2_B_addr_s : signal is "true";
+    attribute dont_touch of BRAM_2_B_clk_s : signal is "true";
+    attribute dont_touch of BRAM_2_B_din_s : signal is "true";
+    attribute dont_touch of BRAM_2_B_dout_s : signal is "true";
+    attribute dont_touch of BRAM_2_B_en_s : signal is "true";
+    attribute dont_touch of BRAM_2_B_rst_s : signal is "true";
+    attribute dont_touch of clk1_s : signal is "true";
+    attribute dont_touch of clk2_s : signal is "true";
+    attribute dont_touch of clk3_s : signal is "true";
+    attribute dont_touch of clk4_s : signal is "true";
+    attribute dont_touch of clk_sys_s : signal is "true";
+    attribute dont_touch of locked_s : signal is "true";
+    attribute dont_touch of resetn_s : signal is "true";
+    attribute dont_touch of reset_s : signal is "true";
+
+
+
 
 begin
 
@@ -174,7 +202,7 @@ begin
     );
 
     -- 64ch TDC instance
-    TDC64ch_i : component top_64ch_2BRAM
+    TDC64ch_i : component TDC_64ch_2BRAM_wrapper
     generic map (
         GLOBAL_DATE    => GLOBAL_DATE,
         GLOBAL_TIME    => GLOBAL_TIME,

@@ -421,9 +421,17 @@ begin
                     --addr <= addr + 1;
                     case which_bram_s is
                         when "01" =>
-                            addr1 <= addr1 + 1;
+                            if addr1 = "00000000000000000001111101000000" then  -- 8000, just hard code it for now...
+                                addr1 <= (others => '0');
+                            else
+                                addr1 <= addr1 + 1;
+                            end if;
                         when "10" =>
-                            addr2 <= addr2 + 1;
+                            if addr2 = "00000000000000000001111101000000" then
+                                addr2 <= (others => '0');
+                            else
+                                addr2 <= addr2 + 1;
+                            end if;
                         when others => 
                             NULL;
                     end case;

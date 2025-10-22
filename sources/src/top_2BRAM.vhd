@@ -84,7 +84,7 @@ architecture RTL of top_64ch_2BRAM is
     --       My guess is that b/c this interface is described as a master, these DIN/DOUT conventions are from the POV of the slave?
     attribute x_interface_info of BRAM_1_addr_b : signal is "xilinx.com:interface:bram:1.0 BRAM_1_b ADDR";
     attribute x_interface_mode of BRAM_1_addr_b : signal is "master BRAM_1_b";
-    attribute x_interface_parameter of BRAM_1_addr_b : signal is "XIL_INTERFACENAME BRAM_1_b, MEM_SIZE 8192, MEM_WIDTH 64, MASTER_TYPE BRAM_CTRL, MEM_ECC NONE, READ_LATENCY 1";
+    attribute x_interface_parameter of BRAM_1_addr_b : signal is "XIL_INTERFACENAME BRAM_1_b, MEM_SIZE 30720, MEM_WIDTH 64, MASTER_TYPE BRAM_CTRL, MEM_ECC NONE, READ_LATENCY 1";
     attribute x_interface_info of BRAM_1_clk_b : signal is "xilinx.com:interface:bram:1.0 BRAM_1_b CLK";
     attribute x_interface_info of BRAM_1_rddata_b : signal is "xilinx.com:interface:bram:1.0 BRAM_1_b DOUT";
     attribute x_interface_info of BRAM_1_wrdata_b : signal is "xilinx.com:interface:bram:1.0 BRAM_1_b DIN";
@@ -93,7 +93,7 @@ architecture RTL of top_64ch_2BRAM is
     attribute x_interface_info of BRAM_1_we_b : signal is "xilinx.com:interface:bram:1.0 BRAM_1_b WE";
     attribute x_interface_info of BRAM_2_addr_b : signal is "xilinx.com:interface:bram:1.0 BRAM_2_b ADDR";
     attribute x_interface_mode of BRAM_2_addr_b : signal is "master BRAM_2_b";
-    attribute x_interface_parameter of BRAM_2_addr_b : signal is "XIL_INTERFACENAME BRAM_2_b, MEM_SIZE 8192, MEM_WIDTH 64, MASTER_TYPE BRAM_CTRL, MEM_ECC NONE, READ_LATENCY 1";
+    attribute x_interface_parameter of BRAM_2_addr_b : signal is "XIL_INTERFACENAME BRAM_2_b, MEM_SIZE 30720, MEM_WIDTH 64, MASTER_TYPE BRAM_CTRL, MEM_ECC NONE, READ_LATENCY 1";
     attribute x_interface_info of BRAM_2_clk_b : signal is "xilinx.com:interface:bram:1.0 BRAM_2_b CLK";
     attribute x_interface_info of BRAM_2_rddata_b : signal is "xilinx.com:interface:bram:1.0 BRAM_2_b DOUT";
     attribute x_interface_info of BRAM_2_wrdata_b : signal is "xilinx.com:interface:bram:1.0 BRAM_2_b DIN";

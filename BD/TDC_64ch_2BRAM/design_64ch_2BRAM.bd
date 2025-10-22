@@ -34,7 +34,7 @@
       "tdc_hit": {
         "direction": "I",
         "left": "0",
-        "right": "0"
+        "right": "63"
       }
     },
     "components": {
@@ -1526,7 +1526,7 @@
             "vlnv": "xilinx.com:interface:bram_rtl:1.0",
             "parameters": {
               "MEM_SIZE": {
-                "value": "8192",
+                "value": "30720",
                 "value_src": "constant"
               },
               "MEM_WIDTH": {
@@ -1591,7 +1591,7 @@
             "vlnv": "xilinx.com:interface:bram_rtl:1.0",
             "parameters": {
               "MEM_SIZE": {
-                "value": "8192",
+                "value": "30720",
                 "value_src": "constant"
               },
               "MEM_WIDTH": {
@@ -1733,7 +1733,7 @@
         "vlnv": "xilinx.com:ip:axi_bram_ctrl:4.1",
         "ip_revision": "11",
         "xci_name": "design_64ch_2BRAM_AXI_BRAM_1_CTRL_0",
-        "xci_path": "ip/design_64ch_2BRAM_AXI_BRAM_1_CTRL_0_4/design_64ch_2BRAM_AXI_BRAM_1_CTRL_0.xci",
+        "xci_path": "ip/design_64ch_2BRAM_AXI_BRAM_1_CTRL_0/design_64ch_2BRAM_AXI_BRAM_1_CTRL_0.xci",
         "inst_hier_path": "AXI_BRAM_1_CTRL",
         "parameters": {
           "DATA_WIDTH": {
@@ -1748,7 +1748,7 @@
         "vlnv": "xilinx.com:ip:axi_bram_ctrl:4.1",
         "ip_revision": "11",
         "xci_name": "design_64ch_2BRAM_AXI_BRAM_2_CTRL_0",
-        "xci_path": "ip/design_64ch_2BRAM_AXI_BRAM_2_CTRL_0_4/design_64ch_2BRAM_AXI_BRAM_2_CTRL_0.xci",
+        "xci_path": "ip/design_64ch_2BRAM_AXI_BRAM_2_CTRL_0/design_64ch_2BRAM_AXI_BRAM_2_CTRL_0.xci",
         "inst_hier_path": "AXI_BRAM_2_CTRL",
         "parameters": {
           "DATA_WIDTH": {
@@ -1930,7 +1930,7 @@
         "vlnv": "xilinx.com:ip:blk_mem_gen:8.4",
         "ip_revision": "9",
         "xci_name": "design_64ch_2BRAM_BRAM_1_0",
-        "xci_path": "ip/design_64ch_2BRAM_BRAM_1_0_4/design_64ch_2BRAM_BRAM_1_0.xci",
+        "xci_path": "ip/design_64ch_2BRAM_BRAM_1_0/design_64ch_2BRAM_BRAM_1_0.xci",
         "inst_hier_path": "BRAM_1",
         "parameters": {
           "Memory_Type": {
@@ -1942,7 +1942,7 @@
         "vlnv": "xilinx.com:ip:blk_mem_gen:8.4",
         "ip_revision": "9",
         "xci_name": "design_64ch_2BRAM_BRAM_2_0",
-        "xci_path": "ip/design_64ch_2BRAM_BRAM_2_0_4/design_64ch_2BRAM_BRAM_2_0.xci",
+        "xci_path": "ip/design_64ch_2BRAM_BRAM_2_0/design_64ch_2BRAM_BRAM_2_0.xci",
         "inst_hier_path": "BRAM_2",
         "parameters": {
           "Memory_Type": {
@@ -2080,339 +2080,11 @@
           }
         }
       },
-      "ilconcat_0": {
-        "vlnv": "xilinx.com:inline_hdl:ilconcat:1.0",
-        "parameters": {
-          "IN0_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN10_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN11_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN12_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN13_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN14_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN15_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN16_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN17_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN18_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN19_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN1_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN20_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN21_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN22_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN23_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN24_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN25_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN26_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN27_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN28_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN29_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN2_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN30_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN31_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN32_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN33_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN34_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN35_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN36_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN37_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN38_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN39_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN3_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN40_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN41_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN42_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN43_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN44_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN45_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN46_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN47_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN48_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN49_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN4_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN50_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN51_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN52_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN53_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN54_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN55_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN56_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN57_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN58_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN59_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN5_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN60_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN61_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN62_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN63_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN6_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN7_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN8_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "IN9_WIDTH": {
-            "value": "1",
-            "value_src": "propagated",
-            "value_mode": "auto"
-          },
-          "NUM_PORTS": {
-            "value": "64"
-          }
-        }
-      },
       "READ_BUSY": {
         "vlnv": "xilinx.com:ip:axi_gpio:2.0",
         "ip_revision": "35",
         "xci_name": "design_64ch_2BRAM_READ_BUSY_0",
-        "xci_path": "ip/design_64ch_2BRAM_READ_BUSY_0_4/design_64ch_2BRAM_READ_BUSY_0.xci",
+        "xci_path": "ip/design_64ch_2BRAM_READ_BUSY_0/design_64ch_2BRAM_READ_BUSY_0.xci",
         "inst_hier_path": "READ_BUSY",
         "parameters": {
           "C_ALL_OUTPUTS": {
@@ -2427,7 +2099,7 @@
         "vlnv": "xilinx.com:ip:axi_gpio:2.0",
         "ip_revision": "35",
         "xci_name": "design_64ch_2BRAM_WHICH_BRAM_0",
-        "xci_path": "ip/design_64ch_2BRAM_WHICH_BRAM_0_4/design_64ch_2BRAM_WHICH_BRAM_0.xci",
+        "xci_path": "ip/design_64ch_2BRAM_WHICH_BRAM_0/design_64ch_2BRAM_WHICH_BRAM_0.xci",
         "inst_hier_path": "WHICH_BRAM",
         "parameters": {
           "C_ALL_INPUTS": {
@@ -2452,7 +2124,7 @@
             "value": "2"
           },
           "C_NUM_OF_PROBES": {
-            "value": "8"
+            "value": "7"
           },
           "C_PROBE0_TYPE": {
             "value": "0"
@@ -2473,9 +2145,6 @@
             "value": "0"
           },
           "C_PROBE6_TYPE": {
-            "value": "0"
-          },
-          "C_PROBE7_TYPE": {
             "value": "0"
           },
           "C_SLOT_0_INTF_TYPE": {
@@ -2595,7 +2264,7 @@
       "DEBUG_data": {
         "ports": [
           "top_64ch_2BRAM_0/DEBUG_data",
-          "system_ila_0/probe5"
+          "system_ila_0/probe4"
         ],
         "hdl_attributes": {
           "DEBUG": {
@@ -2609,7 +2278,7 @@
       "DEBUG_grant": {
         "ports": [
           "top_64ch_2BRAM_0/DEBUG_grant",
-          "system_ila_0/probe6"
+          "system_ila_0/probe5"
         ],
         "hdl_attributes": {
           "DEBUG": {
@@ -2623,7 +2292,7 @@
       "DEBUG_valid": {
         "ports": [
           "top_64ch_2BRAM_0/DEBUG_valid",
-          "system_ila_0/probe7"
+          "system_ila_0/probe6"
         ],
         "hdl_attributes": {
           "DEBUG": {
@@ -2637,70 +2306,7 @@
       "In0_0_1": {
         "ports": [
           "tdc_hit",
-          "ilconcat_0/In0",
-          "ilconcat_0/In4",
-          "ilconcat_0/In51",
-          "ilconcat_0/In1",
-          "ilconcat_0/In2",
-          "ilconcat_0/In3",
-          "ilconcat_0/In5",
-          "ilconcat_0/In6",
-          "ilconcat_0/In7",
-          "ilconcat_0/In8",
-          "ilconcat_0/In9",
-          "ilconcat_0/In10",
-          "ilconcat_0/In11",
-          "ilconcat_0/In12",
-          "ilconcat_0/In13",
-          "ilconcat_0/In14",
-          "ilconcat_0/In15",
-          "ilconcat_0/In16",
-          "ilconcat_0/In17",
-          "ilconcat_0/In18",
-          "ilconcat_0/In19",
-          "ilconcat_0/In20",
-          "ilconcat_0/In21",
-          "ilconcat_0/In22",
-          "ilconcat_0/In23",
-          "ilconcat_0/In24",
-          "ilconcat_0/In25",
-          "ilconcat_0/In26",
-          "ilconcat_0/In27",
-          "ilconcat_0/In28",
-          "ilconcat_0/In29",
-          "ilconcat_0/In30",
-          "ilconcat_0/In31",
-          "ilconcat_0/In32",
-          "ilconcat_0/In33",
-          "ilconcat_0/In34",
-          "ilconcat_0/In35",
-          "ilconcat_0/In36",
-          "ilconcat_0/In37",
-          "ilconcat_0/In38",
-          "ilconcat_0/In39",
-          "ilconcat_0/In40",
-          "ilconcat_0/In41",
-          "ilconcat_0/In42",
-          "ilconcat_0/In43",
-          "ilconcat_0/In44",
-          "ilconcat_0/In45",
-          "ilconcat_0/In46",
-          "ilconcat_0/In47",
-          "ilconcat_0/In48",
-          "ilconcat_0/In49",
-          "ilconcat_0/In50",
-          "ilconcat_0/In52",
-          "ilconcat_0/In53",
-          "ilconcat_0/In54",
-          "ilconcat_0/In55",
-          "ilconcat_0/In56",
-          "ilconcat_0/In57",
-          "ilconcat_0/In58",
-          "ilconcat_0/In59",
-          "ilconcat_0/In60",
-          "ilconcat_0/In61",
-          "ilconcat_0/In62",
-          "ilconcat_0/In63"
+          "top_64ch_2BRAM_0/hits"
         ]
       },
       "MMCM_RSTN_Res": {
@@ -2770,21 +2376,6 @@
           }
         }
       },
-      "ilconcat_0_dout": {
-        "ports": [
-          "ilconcat_0/dout",
-          "system_ila_0/probe1",
-          "top_64ch_2BRAM_0/hits"
-        ],
-        "hdl_attributes": {
-          "DEBUG": {
-            "value": "true"
-          },
-          "MARK_DEBUG": {
-            "value": "true"
-          }
-        }
-      },
       "rst_ps8_0_99M_peripheral_aresetn": {
         "ports": [
           "rst_ps8_0_99M/peripheral_aresetn",
@@ -2801,7 +2392,7 @@
         "ports": [
           "top_64ch_2BRAM_0/irq_o",
           "zynq_ultra_ps_e_0/pl_ps_irq0",
-          "system_ila_0/probe3"
+          "system_ila_0/probe1"
         ],
         "hdl_attributes": {
           "DEBUG": {
@@ -2816,7 +2407,7 @@
         "ports": [
           "top_64ch_2BRAM_0/which_bram",
           "WHICH_BRAM/gpio_io_i",
-          "system_ila_0/probe4"
+          "system_ila_0/probe3"
         ],
         "hdl_attributes": {
           "DEBUG": {

@@ -25,7 +25,7 @@ architecture STRUCTURE of design_64ch_2BRAM_wrapper is
     trigger : in STD_LOGIC;
     tdc_hit : in STD_LOGIC_VECTOR ( 0 to 0 )
   );
-  end component design_1;
+  end component design_64ch_2BRAM;
 begin
 design_1_i: component design_64ch_2BRAM
      port map (

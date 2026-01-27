@@ -1,0 +1,7 @@
+&READ_BUSY {
+    compatible = "generic-uio,ui_pdrv";
+};
+
+&WHICH_BRAM {
+    compatible = "generic-uio,ui_pdrv";
+};

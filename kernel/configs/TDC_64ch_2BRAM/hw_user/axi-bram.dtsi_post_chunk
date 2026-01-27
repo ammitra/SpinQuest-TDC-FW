@@ -1,0 +1,7 @@
+&AXI_BRAM_1_CTRL {
+    compatible = "generic-uio,ui_pdrv";
+};
+
+&AXI_BRAM_2_CTRL {
+    compatible = "generic-uio,ui_pdrv";
+};

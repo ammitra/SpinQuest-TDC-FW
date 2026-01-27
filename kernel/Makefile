@@ -261,31 +261,7 @@ endef
 
 
 define build_output_files_USp =
-	@echo "================================================================================" 	$(OUTPUT_MARKUP)
-	@echo "package"																				$(OUTPUT_MARKUP)
-	@cd $(ZYNQ_BUILD_PROJECT_PATH) &&\
-		source $(SOURCE_PETALINUX_ENV) && \
-		petalinux-package --boot --format BIN --fsbl ${LINUX_BUILD_REL_PATH}/zynqmp_fsbl.elf \
-			--fpga ../../$$<  --uboot ${LINUX_BUILD_REL_PATH}/u-boot.elf --pmufw ${LINUX_BUILD_REL_PATH}/pmufw.elf \
-			--atf ${LINUX_BUILD_REL_PATH}/bl31.elf  --dtb ${LINUX_BUILD_REL_PATH}/system.dtb \
-			-o  ${LINUX_BUILD_REL_PATH}/BOOT.BIN --force 										$(OUTPUT_MARKUP)
-	@echo "================================================================================" 	$(OUTPUT_MARKUP)
-	@echo "tar"					 																$(OUTPUT_MARKUP)
-	mkdir -p $(MAKE_PATH)/output/$$@${SUB_VARIENT_SELECTION}/
-	rm -rf $(MAKE_PATH)/output/$$@${SUB_VARIENT_SELECTION}/*
-	ln -s $(ZYNQ_BUILD_PROJECT_PATH)/${LINUX_BUILD_REL_PATH}/BOOT.BIN $(MAKE_PATH)/output/$$@${SUB_VARIENT_SELECTION}/BOOT.BIN
-	ln -s $(ZYNQ_BUILD_PROJECT_PATH)/${LINUX_BUILD_REL_PATH}/boot.scr $(MAKE_PATH)/output/$$@${SUB_VARIENT_SELECTION}/boot.scr
-	ln -s $(ZYNQ_BUILD_PROJECT_PATH)/${LINUX_BUILD_REL_PATH}/image.ub $(MAKE_PATH)/output/$$@${SUB_VARIENT_SELECTION}/image.ub
-	mkdir $(MAKE_PATH)/output/$$@${SUB_VARIENT_SELECTION}/modules
-	cp $(ZYNQ_KERNEL_MODULES_PATH)/dma-proxy/lib/modules/*/extra/dma_proxy.ko $(MAKE_PATH)/output/$$@${SUB_VARIENT_SELECTION}/modules/
-
-#	build a tarball of the firmware files and the address table files
-#	for -C, remember that the have state, so ../ infront of address talbes because of the output dir change
-#   use --transform to convert build specific address table to general one
-	tar -h --transform='s/address_table_$$@/address_table/' \
-		-zcf $(ZYNQ_BUILD_PROJECT_PATH)/$$@.tar.gz \
-		-C output/$$@${SUB_VARIENT_SELECTION} BOOT.BIN boot.scr image.ub modules \
-		-C ../../address_tables/ address_table_$$@												$(OUTPUT_MARKUP)
+	@echo TODO....
 endef
 
 define build_USp =

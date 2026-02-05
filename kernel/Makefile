@@ -226,7 +226,7 @@ define build_output_files_USp =
 	@echo "package"																				$(OUTPUT_MARKUP)
 	@cd $(ZYNQ_BUILD_PROJECT_PATH) &&\
 		source $(SOURCE_PETALINUX_ENV) && \
-		petalinux-package --boot --u-boot --force \
+		petalinux-package --boot --u-boot --force && \
 		petalinux-package --wic --images-dir images/linux/ --bootfiles "boot.scr, Image, system.dtb" --disk-name "sda"
 
 endef

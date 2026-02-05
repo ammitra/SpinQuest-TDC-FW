@@ -104,7 +104,7 @@ ESW_MOD_DST_PATH=$(YOCTO_USER_BSP_BASE)/embeddedsw/
 KERNEL_MODS_SRC_PATH=$(CONFIG_BASE)/kernel/linux
 KERNEL_MODS_DST_PATH=$(YOCTO_USER_KERNEL_BASE)/
 
-DEVTREE_MODS_SRC_PATHS="./hw/$(1) ./hw_* $(CONFIG_BASE)/hw_user"
+DEVTREE_MODS_SRC_PATHS="$(CONFIG_BASE)/hw_user"
 DEVTREE_MODS_SCRIPT=$(CONFIG_BASE)/device-tree/build_user_dtsi${SUB_VARIENT_SELECTION}
 DEVTREE_MODS_DST_FILE=$(YOCTO_USER_BSP_BASE)/device-tree/files/system-user.dtsi
 
@@ -154,13 +154,6 @@ define copy_configs =
 	@cp 	$(BOOT_CONFIG_SRC_PATH)/$(BOOT_CONFIG_SRC_FILENAME)  \
 			$(BOOT_CONFIG_DST_PATH)/config.old || :												$(OUTPUT_MARKUP)
 
-# #   UBOOT Mods ==============================================================
-# 	@echo "================================================================================" 	$(OUTPUT_MARKUP)
-# 	@echo "adding u-boot files" 																$(OUTPUT_MARKUP)
-# 	@mkdir -p $(dir $(UBOOT_MOD_DST_PATH)) 														$(OUTPUT_MARKUP)
-# 	@cp -r 	$(UBOOT_MOD_SRC_PATH)/*  \
-# 			$(UBOOT_MOD_DST_PATH) || :															$(OUTPUT_MARKUP)
-
 #   ESW mods ================================================================
 	@echo "================================================================================" 	$(OUTPUT_MARKUP)
 	@echo "adding embedded sw files" 															$(OUTPUT_MARKUP)
@@ -168,48 +161,16 @@ define copy_configs =
 	@cp -r 	$(ESW_MOD_SRC_PATH)/*    \
 			$(ESW_MOD_DST_PATH) || :															$(OUTPUT_MARKUP)
 
-# #   Kernel mods =============================================================
-# 	@echo "================================================================================" 	$(OUTPUT_MARKUP)
-# 	@echo "adding user kernel modifications" 													$(OUTPUT_MARKUP)
-# 	@mkdir -p $(dir $(KERNEL_MODS_DST_PATH)) 													$(OUTPUT_MARKUP)
-# 	@cp -r 	$(KERNEL_MODS_SRC_PATH) \
-# 			$(KERNEL_MODS_DST_PATH) || : 														$(OUTPUT_MARKUP)
 
 #	Device Tree mods ========================================================
 	@echo "================================================================================" 	$(OUTPUT_MARKUP)
 	@echo "Building device tree mods"	 														$(OUTPUT_MARKUP)
+	@echo $(DEVTREE_MODS_SCRIPT)																$(OUTPUT_MARKUP)
+	@echo $(DEVTREE_MODS_SRC_PATHS)																$(OUTPUT_MARKUP)
+	@echo $(DEVTREE_MODS_DST_FILE)																$(OUTPUT_MARKUP)
 	DTSI_PATH= $(DEVTREE_MODS_SCRIPT) \
 		 	$(DEVTREE_MODS_SRC_PATHS) > \
 			$(DEVTREE_MODS_DST_FILE) || : 														$(OUTPUT_MARKUP)
-
-# #	Kernel modules ==========================================================
-# 	@echo "================================================================================" 	$(OUTPUT_MARKUP)
-# 	@echo "adding kernel modules to be built"													$(OUTPUT_MARKUP)
-# 	KMODULE_SRC_PATH=$(KMODULE_SRC_PATH) \
-# 		ZYNQ_BUILD_PROJECT_PATH=$(ZYNQ_BUILD_PROJECT_PATH) \
-# 		SOURCE_PETALINUX_ENV=${SOURCE_PETALINUX_ENV} \
-# 		KMODULE_DST_PATH=${KMODULE_DST_PATH} \
-# 		${KMODULE_SCRIPT}	|| :																$(OUTPUT_MARKUP)
-
-# #   FSBL mods ===============================================================
-# #	Make dir, copy base files, address files, run fsbl mod script
-# 	@echo "================================================================================" 	$(OUTPUT_MARKUP)
-# 	@echo "Modify FSBL" 																		$(OUTPUT_MARKUP)
-# 	@mkdir -p $(FSBL_MOD_DST_PATH)																$(OUTPUT_MARKUP)
-# 	@cp -r 	$(FSBL_MOD_SRC_PATH)/* \
-# 			$(FSBL_MOD_DST_PATH) || :															$(OUTPUT_MARKUP)
-# 	@mkdir -p $(FSBL_MOD_ADDR_DST_PATH)/zynqmp_fsbl/src/										$(OUTPUT_MARKUP)
-# 	@cp    	$(FSBL_MOD_ADDR_SRC_PATH)/AXI_slave_addrs.h \
-# 			$(FSBL_MOD_ADDR_DST_PATH)/zynqmp_fsbl/src/											$(OUTPUT_MARKUP)
-# 	@mkdir -p $(FSBL_MOD_ADDR_DST_PATH)/zynq_fsbl/src/											$(OUTPUT_MARKUP)
-# 	@cp    	$(FSBL_MOD_ADDR_SRC_PATH)/AXI_slave_addrs.h \
-# 			$(FSBL_MOD_ADDR_DST_PATH)/zynq_fsbl/src/											$(OUTPUT_MARKUP)
-# 	@$(FSBL_MOD_SRC_PATH)/build_mods.sh $(FSBL_MOD_DST_PATH) || :			
-
-# #	Layer config mod ========================================================
-# 	@echo "================================================================================" 	$(OUTPUT_MARKUP)
-# 	@echo "layer config (if needed)"															$(OUTPUT_MARKUP)
-# 	@cp ./configs/$$@/configs/layer.conf $(ZYNQ_BUILD_PROJECT_PATH)/project-spec/meta-user/conf/ || :
 
 	@echo "================================================================================"	$(OUTPUT_MARKUP)
 	@echo "End of mods"																			$(OUTPUT_MARKUP)
@@ -261,7 +222,13 @@ endef
 
 
 define build_output_files_USp =
-	@echo TODO....
+	@echo "================================================================================" 	$(OUTPUT_MARKUP)
+	@echo "package"																				$(OUTPUT_MARKUP)
+	@cd $(ZYNQ_BUILD_PROJECT_PATH) &&\
+		source $(SOURCE_PETALINUX_ENV) && \
+		petalinux-package --boot --u-boot --force \
+		petalinux-package --wic --images-dir images/linux/ --bootfiles "boot.scr, Image, system.dtb" --disk-name "sda"
+
 endef
 
 define build_USp =

@@ -1,6 +1,6 @@
 # ZynqMP OS build
 
-This directory contains the Makefile for building the devicetree and kernel for the Krio ZynqMPSoC, as well as packaging them into the `BOOT.bin` and `image.ub` files. 
+This directory contains the Makefile for building the devicetree and kernel for the Krio ZynqMPSoC, as well as packaging them into the `BOOT.bin` and `image.ub` files. Based off the [LHC Apollo Service Module firmware repo](https://gitlab.com/apollo-lhc/FW/SM_ZYNQ_FW).
 
 ## device tree
 

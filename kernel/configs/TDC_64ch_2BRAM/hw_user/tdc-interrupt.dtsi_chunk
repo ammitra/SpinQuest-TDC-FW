@@ -1,5 +1,7 @@
+
     TDC_INT: tdc_int@80000000 {
             compatible = "generic-uio", "ui_pdrv";
             interrupt-parent = <&gic>;
             interrupts = <0 89 1>;
     };
+    

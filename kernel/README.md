@@ -30,4 +30,17 @@ As a default, we modify the kernel to include the UIO drivers as well as the TI 
 
 Users can add or remove packages from the image's rootfs by modifying the file `configs/TDC_64ch_2BRAM/configs/rootfs/rootfs_config`. 
 
+## U-boot 
 
+U-boot can be configured by modifying the file `configs/TDC_64ch_2BRAM/u-boot/files/user.cfg`:
+
+```
+configs/TDC_64ch_2BRAM/u-boot/
+├── files
+│   ├── 0001-ubifs-distroboot-support.patch
+│   ├── platform-top.h
+│   └── user.cfg
+└── u-boot-xlnx_%.bbappend
+```
+
+If you create new `.cfg` files, you have to list them in the `u-boot-xlnx_%.bbappend` file just as was done for the kernel mods above. 

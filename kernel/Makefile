@@ -162,6 +162,13 @@ define copy_configs =
 			$(ESW_MOD_DST_PATH) || :															$(OUTPUT_MARKUP)
 
 
+#       Kernel mods =============================================================
+	@echo "================================================================================" 	$(OUTPUT_MARKUP)
+	@echo "adding user kernel modifications (UIO and TI DP83869 phy drivers)" 							$(OUTPUT_MARKUP)
+	@mkdir -p $(dir $(KERNEL_MODS_DST_PATH)) 							$(OUTPUT_MARKUP)
+	@cp -r 	$(KERNEL_MODS_SRC_PATH) \
+		$(KERNEL_MODS_DST_PATH) || :
+
 #	Device Tree mods ========================================================
 	@echo "================================================================================" 	$(OUTPUT_MARKUP)
 	@echo "Building device tree mods"	 														$(OUTPUT_MARKUP)

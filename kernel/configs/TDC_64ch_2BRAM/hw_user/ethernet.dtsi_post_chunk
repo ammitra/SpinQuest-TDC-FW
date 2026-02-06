@@ -1,0 +1,15 @@
+&gem1 {
+    phy-handle = <&phy0>;
+    phy-mode = "rgmii-id";
+    xlnx,has-mdio = <0x1>;
+    mdio {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	compatible = "cdns,gem-mdio";
+        phy0: phy@0 {
+            compatible = "ti,dp83869";
+            reg = <0x0>;
+	    device_type = "ethernet-phy";
+        };
+    };
+};

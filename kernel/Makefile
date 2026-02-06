@@ -154,6 +154,13 @@ define copy_configs =
 	@cp 	$(BOOT_CONFIG_SRC_PATH)/$(BOOT_CONFIG_SRC_FILENAME)  \
 			$(BOOT_CONFIG_DST_PATH)/config.old || :												$(OUTPUT_MARKUP)
 
+#       UBOOT Mods ==============================================================
+	@echo "================================================================================" 	$(OUTPUT_MARKUP)
+	@echo "adding u-boot files" 									$(OUTPUT_MARKUP)
+	@mkdir -p $(dir $(UBOOT_MOD_DST_PATH)) 								$(OUTPUT_MARKUP)
+	@cp -r 	$(UBOOT_MOD_SRC_PATH)/*  \
+		$(UBOOT_MOD_DST_PATH) || :	
+
 #   ESW mods ================================================================
 	@echo "================================================================================" 	$(OUTPUT_MARKUP)
 	@echo "adding embedded sw files" 															$(OUTPUT_MARKUP)

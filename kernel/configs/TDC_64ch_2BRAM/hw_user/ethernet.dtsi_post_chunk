@@ -6,11 +6,22 @@
 	#address-cells = <1>;
 	#size-cells = <0>;
 	compatible = "cdns,gem-mdio";
-	local-mac-address = [00 0a 35 00 1e 53];
         phy0: phy@0 {
-            compatible = "ti,dp83869";
+            compatible = "ti,dp83869", "ethernet-phy-id2000.a0f3";
             reg = <0x0>;
 	    device_type = "ethernet-phy";
         };
+        phy1: phy@3 { /* PHY for GEM2, using GEM1 MDIO */
+            compatible = "ti,dp83869", "ethernet-phy-id2000.a0f3";
+            reg = <0x3>;
+            device_type = "ethernet-phy";
+        };
     };
+};
+
+&gem2 {
+    status = "okay";
+    phy-handle = <&phy1>;
+    phy-mode = "rgmii-id";
+    /* No mdio node needed here, they share the bus */
 };

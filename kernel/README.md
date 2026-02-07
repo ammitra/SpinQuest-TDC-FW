@@ -2,6 +2,10 @@
 
 This directory contains the Makefile for building the devicetree and kernel for the Krio ZynqMPSoC, as well as packaging them into the `BOOT.bin` and `image.ub` files. Based off the [LHC Apollo Service Module firmware repo](https://gitlab.com/apollo-lhc/FW/SM_ZYNQ_FW).
 
+To build and package everything, just run `make build`. A list of targets can be obtained with `make list`. The final device tree source can be inspected after building with `make get_built_dts`.
+
+The entire build can be customized following the instructions below. 
+
 ## device tree
 
 The device tree is generated from the output products of Vivado, namely those providing the hardware description (address maps, device names, etc). Additional information is created to mark IP (BRAM controllers, GPIO) and HDL (TDC interrupt line) as generic-uio devices so that they can be interacted with easily using userspace applications on the SoC. The device tree is populated using the information contained in the XSA file produced by Vivado, but modifications can be made by the user by editing the file `<project_root>/project-spec/meta-user/recipes-bsp/device-tree/files/system-user.dtsi`. This can be automated using `.dtsi_chunk` and `.dtsi_post_chunk` files, found under `configs/TDC_64ch_2BRAM/hw_user/`. 
@@ -44,3 +48,14 @@ configs/TDC_64ch_2BRAM/u-boot/
 ```
 
 If you create new `.cfg` files, you have to list them in the `u-boot-xlnx_%.bbappend` file just as was done for the kernel mods above. 
+
+## Some notes on customizing the build. 
+
+The automated build process performed by this Makefile essentially works by creating a bare petalinux project and populating it (via `cp` commands) with pre-configured settings from the `configs/` directory. If you want to customize further, the best thing to do is:
+
+1. Build the project 
+2. Go to the petalinux project (by default, `cd zynq_build/.emmc/`
+3. Run `petalinux-config -c [kernel] [u-boot] [rootfs]` to configure the desired target
+4. Observe the outputs. For each of the above `petalinux-config` arguments, the output config file(s) end up in one of the `zynq_build/.emmc/project-spec/meta-user/recipes-*/` directories
+5. Copy these outputs to their respective location in this repo's `configs/` directory.
+6. Modify the Makefile to include the new mods, if applicable. If modifying existing settings, then the Makefile probably doesn't need to be modified.

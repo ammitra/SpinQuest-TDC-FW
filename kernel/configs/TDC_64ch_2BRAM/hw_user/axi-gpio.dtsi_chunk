@@ -18,6 +18,7 @@
 		xlnx,tri-default = <0xFFFFFFFF>;
 		xlnx,tri-default-2 = <0xFFFFFFFF>;
 	};
+
 	WHICH_BRAM: gpio@a0020000 {
 		#gpio-cells = <2>;
 		clock-names = "s_axi_aclk";
@@ -38,3 +39,4 @@
 		xlnx,tri-default = <0xFFFFFFFF>;
 		xlnx,tri-default-2 = <0xFFFFFFFF>;
 	};
+

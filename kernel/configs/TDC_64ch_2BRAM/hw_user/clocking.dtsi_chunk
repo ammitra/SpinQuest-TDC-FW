@@ -6,6 +6,7 @@
 		clocks = <&zynqmp_clk 71>;
 		compatible = "xlnx,fclk";
 	};
+
 	clocking1: clocking1 {
 		#clock-cells = <0>;
 		assigned-clock-rates = <49999500>;
@@ -14,3 +15,4 @@
 		clocks = <&zynqmp_clk 72>;
 		compatible = "xlnx,fclk";
 	};
+

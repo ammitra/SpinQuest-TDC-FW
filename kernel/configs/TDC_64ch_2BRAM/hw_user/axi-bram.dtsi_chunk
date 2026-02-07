@@ -18,6 +18,7 @@
 		xlnx,s-axi-supports-narrow-burst = <0x0>;
 		xlnx,single-port-bram = <0x1>;
 	};
+
 	AXI_BRAM_2_CTRL: axi_bram_ctrl@a0002000 {
 		clock-names = "s_axi_aclk";
 		clocks = <&zynqmp_clk 71>;
@@ -38,3 +39,4 @@
 		xlnx,s-axi-supports-narrow-burst = <0x0>;
 		xlnx,single-port-bram = <0x1>;
 	};
+

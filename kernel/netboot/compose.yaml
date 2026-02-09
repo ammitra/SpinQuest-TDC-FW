@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+    netboot:
+        build: .
+        container_name: netboot
+        network_mode: "host"
+        privileged: true
+        volumes:
+            - ../zynq_build/.emmc/images/linux/:/srv/tftpboot
+            - ../zynq_build/.emmc/images/linux/:/srv/nfsroot
+        restart: unless-stopped

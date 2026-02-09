@@ -1,0 +1,31 @@
+# Dockerfile - TFTP + NFS server for serving PetaLinux boot images
+FROM ubuntu:latest
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update \
+ && apt-get install -y \
+    tftpd-hpa \
+    nfs-kernel-server \
+    rpcbind \
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/*
+
+# Create default export and tftp dirs
+RUN mkdir -p /srv/tftpboot /srv/nfsroot \
+ && chown -R nobody:nogroup /srv/tftpboot /srv/nfsroot
+
+# Entrypoint script to run all services in foreground
+COPY entrypoint.sh /entrypoint.sh
+
+RUN chmod +x /entrypoint.sh
+
+# Expose TFTP (UDP), RPC and NFS ports (mountd uses 20048 below)
+EXPOSE 69/udp 111 111/udp 2049 20048/tcp
+
+VOLUME ["/srv/tftpboot", "/srv/nfsroot"]
+
+# At runtime mount PetaLinux/Yocto files:
+#  - place U-Boot/BOOT.BIN, image.ub, etc. in /srv/tftpboot (TFTP)
+#  - place rootfs/kernel/dtbs in /srv/nfsroot (NFS root) and export will serve them
+CMD ["/entrypoint.sh"]

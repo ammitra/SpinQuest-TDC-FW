@@ -1,3 +1,4 @@
+SHELL:=/bin/bash
 MAKE_PATH:=$(shell pwd)
 
 OUTPUT_MARKUP= 2>&1 | tee -a $(MAKE_PATH)/logs/make_log-$$@${SUB_VARIENT_SELECTION}.txt ${CCZE_CMD}
@@ -202,7 +203,7 @@ define build_project =
 	@echo "================================================================================" 	$(OUTPUT_MARKUP)
 	@echo "Config the project with info from the HW"
 	@cd $(ZYNQ_BUILD_PROJECT_PATH) &&\
-		source $(SOURCE_PETALINUX_ENV) && \
+		. $(SOURCE_PETALINUX_ENV) && \
 		pwd && \
 		petalinux-config --get-hw-description \
 				../../../Projects/vivado/TDC_64ch_2BRAM/TDC_64ch_2BRAM.xsa --silentconfig       $(OUTPUT_MARKUP)
@@ -212,17 +213,17 @@ define build_project =
 	@echo "================================================================================" 	$(OUTPUT_MARKUP)
 	@echo "Reset the project build"																$(OUTPUT_MARKUP)
 	@cd $(ZYNQ_BUILD_PROJECT_PATH) &&\
-		source $(SOURCE_PETALINUX_ENV) && \
+		. $(SOURCE_PETALINUX_ENV) && \
 		petalinux-build -x mrproper 															$(OUTPUT_MARKUP)
 	@echo "================================================================================" 	$(OUTPUT_MARKUP)
 	@echo "Build the project"																	$(OUTPUT_MARKUP)
 	@cd $(ZYNQ_BUILD_PROJECT_PATH) &&\
-		source $(SOURCE_PETALINUX_ENV) && \
+		. $(SOURCE_PETALINUX_ENV) && \
 		petalinux-build 																		$(OUTPUT_MARKUP)
 	@echo "================================================================================" 	$(OUTPUT_MARKUP)
 	@echo "Build the app"																		$(OUTPUT_MARKUP)
 	@cd $(ZYNQ_BUILD_PROJECT_PATH) &&\
-		source $(SOURCE_PETALINUX_ENV) && \
+		. $(SOURCE_PETALINUX_ENV) && \
 		petalinux-create -t apps --template fpgamanager_dtg -n tdc-app --enable \
 		--srcuri "./project-spec/hw-description/system.xsa ../../configs/TDC_64ch_2BRAM/embeddedsw/shell.json" $(OUTPUT_MARKUP)
 	@cd $(ZYNQ_BUILD_PROJECT_PATH) &&\
@@ -230,7 +231,7 @@ define build_project =
 	@echo "================================================================================" 	$(OUTPUT_MARKUP)
 	@echo "Packaging images"																	$(OUTPUT_MARKUP)
 	@cd $(ZYNQ_BUILD_PROJECT_PATH) &&\
-		source $(SOURCE_PETALINUX_ENV) && \
+		. $(SOURCE_PETALINUX_ENV) && \
 		petalinux-build -x package 																$(OUTPUT_MARKUP)
 endef
 
@@ -249,7 +250,7 @@ define build_USp =
 	@echo "================================================================================" 	$(OUTPUT_MARKUP)
 	@echo "Create petalinux project"															$(OUTPUT_MARKUP)
 	@mkdir -p $(ZYNQ_BUILD)
-	source $(SOURCE_PETALINUX_ENV) && \
+	. $(SOURCE_PETALINUX_ENV) && \
 		cd $(ZYNQ_BUILD) && \
 		petalinux-create --type project --name $$@${SUB_VARIENT_SELECTION} \
 			--template zynqMP --force 															$(OUTPUT_MARKUP)
@@ -281,11 +282,11 @@ get_built_dts : ${ZYNQ_BUILD_PROJECT_PATH}/images/linux/system.dtb
 
 reconfig_kernel:
 	@cd $(ZYNQ_BUILD_PROJECT_PATH) &&\
-		source $(SOURCE_PETALINUX_ENV) && \
+		. $(SOURCE_PETALINUX_ENV) && \
 		petalinux-config -c kernel																	$(OUTPUT_MARKUP)
 
 reconfig:
 	@cd $(ZYNQ_BUILD_PROJECT_PATH) &&\
-		source $(SOURCE_PETALINUX_ENV) && \
+		. $(SOURCE_PETALINUX_ENV) && \
 		petalinux-config																			$(OUTPUT_MARKUP)
 

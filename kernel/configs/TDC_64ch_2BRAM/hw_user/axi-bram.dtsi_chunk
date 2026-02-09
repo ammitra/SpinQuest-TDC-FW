@@ -1,0 +1,42 @@
+	AXI_BRAM_1_CTRL: axi_bram_ctrl@a0000000 {
+		clock-names = "s_axi_aclk";
+		clocks = <&zynqmp_clk 71>;
+		compatible = "xlnx,axi-bram-ctrl-4.1";
+		reg = <0x0 0xa0000000 0x0 0x2000>;
+		xlnx,bram-addr-width = <0xa>;
+		xlnx,bram-inst-mode = "EXTERNAL";
+		xlnx,ecc = <0x0>;
+		xlnx,ecc-onoff-reset-value = <0x0>;
+		xlnx,ecc-type = <0x0>;
+		xlnx,fault-inject = <0x0>;
+		xlnx,memory-depth = <0x400>;
+		xlnx,rd-cmd-optimization = <0x0>;
+		xlnx,read-latency = <0x1>;
+		xlnx,s-axi-ctrl-addr-width = <0x20>;
+		xlnx,s-axi-ctrl-data-width = <0x20>;
+		xlnx,s-axi-id-width = <0x1>;
+		xlnx,s-axi-supports-narrow-burst = <0x0>;
+		xlnx,single-port-bram = <0x1>;
+	};
+
+	AXI_BRAM_2_CTRL: axi_bram_ctrl@a0002000 {
+		clock-names = "s_axi_aclk";
+		clocks = <&zynqmp_clk 71>;
+		compatible = "xlnx,axi-bram-ctrl-4.1";
+		reg = <0x0 0xa0002000 0x0 0x2000>;
+		xlnx,bram-addr-width = <0xa>;
+		xlnx,bram-inst-mode = "EXTERNAL";
+		xlnx,ecc = <0x0>;
+		xlnx,ecc-onoff-reset-value = <0x0>;
+		xlnx,ecc-type = <0x0>;
+		xlnx,fault-inject = <0x0>;
+		xlnx,memory-depth = <0x400>;
+		xlnx,rd-cmd-optimization = <0x0>;
+		xlnx,read-latency = <0x1>;
+		xlnx,s-axi-ctrl-addr-width = <0x20>;
+		xlnx,s-axi-ctrl-data-width = <0x20>;
+		xlnx,s-axi-id-width = <0x1>;
+		xlnx,s-axi-supports-narrow-burst = <0x0>;
+		xlnx,single-port-bram = <0x1>;
+	};
+

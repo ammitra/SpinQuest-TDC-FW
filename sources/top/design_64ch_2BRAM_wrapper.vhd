@@ -14,7 +14,7 @@ library UNISIM;
 use UNISIM.VCOMPONENTS.ALL;
 entity design_64ch_2BRAM_wrapper is
   port (
-    tdc_hit : in STD_LOGIC_VECTOR ( 0 to 0 );
+    tdc_hit : in STD_LOGIC_VECTOR ( 0 to 63 );
     trigger : in STD_LOGIC
   );
 end design_64ch_2BRAM_wrapper;
@@ -23,13 +23,13 @@ architecture STRUCTURE of design_64ch_2BRAM_wrapper is
   component design_64ch_2BRAM is
   port (
     trigger : in STD_LOGIC;
-    tdc_hit : in STD_LOGIC_VECTOR ( 0 to 0 )
+    tdc_hit : in STD_LOGIC_VECTOR ( 0 to 63 )
   );
   end component design_64ch_2BRAM;
 begin
 design_1_i: component design_64ch_2BRAM
      port map (
-      tdc_hit(0) => tdc_hit(0),
+      tdc_hit => tdc_hit,
       trigger => trigger
     );
 end STRUCTURE;

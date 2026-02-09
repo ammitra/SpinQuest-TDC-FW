@@ -19,6 +19,7 @@ SpinQuest-TDC-FW$ tree -dL 2
 ├── Hog
 ├── IP
 ├── README.md
+├── scripts
 ├── sources
 │   ├── sdc
 │   ├── sim
@@ -36,6 +37,7 @@ In order, these subdirectories contain:
 * `BD/`: Vivado block design (`.bd`) files describing the components and connection between components in the block design. Different block designs should be stored in different subdirectories. 
 * `Hog/`: The CERN [Hog](https://gitlab.cern.ch/hog/Hog) repository, added as a submodule. If you forgot to clone this repository with the `--recursive` flag, run the following command from the root of the repository: `git submodule update --init`
 * `IP/`: Storage area for any Xilinx IP cores you produce and instantiate in the design as a component. **NOTE: user IP should be stored in its own directory `IP_Repository`.**
+* `scripts/`: Any useful scripts/code related to the project. Documentation should be written in the files
 * `sources/`: Directory containing constraints, simulation, HDL source, and XML files. 
   * `sdc/`: Storage area for Synopsis Design Constraints and/or Physical Design Constraints files, used for assigning design and timing constraints for Libero designs.
   * `sim/`: Storage area for HDL simulation files and Xilinx waveform configuration files (`.wcfg`).

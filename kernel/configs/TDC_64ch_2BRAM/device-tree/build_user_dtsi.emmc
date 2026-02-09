@@ -1,0 +1,42 @@
+#!/bin/bash
+
+#if [ -z $DTSI_PATH ] ; then
+#    echo ERROR: DTSI_PATH not defined
+#    exit 1
+#fi
+
+DTSI_PATH=$@
+
+filename=/dev/stdout
+
+# Collect all the dtsi chunk files that go in the root /{ namespace
+chunks=$(find $DTSI_PATH -name "*dtsi_chunk")
+# Collect all the dtsi post chunks that go oustide of the /{ namespace
+post_chunks=$(find $DTSI_PATH -name "*dtsi_post_chunk")
+
+# Output updated dtsi fle
+echo "/include/ \"system-conf.dtsi\"" > $filename
+echo "/{"                             >> $filename
+
+# Add the dtsi chunk files here
+for chunk in $chunks
+do 
+    cat $chunk >> $filename
+done
+
+echo "    chosen {"                     >> $filename
+echo "        bootargs = \"earlycon console=ttyPS1,115200 clk_ignore_unused uio_pdrv_genirq.of_id=generic-uio,ui_pdrv xilinx_tsn_ep.st_pcp=4 init_fatal_sh=1 cma=900M \";" >> $filename
+echo "        stdout-path = \"serial1:115200n8\";" >> $filename
+echo "    };"                     >> $filename
+echo "	  aliases {" >> $filename
+echo '        ethernet0 = "/axi/ethernet@ff0c0000";' >> $filename
+echo '        ethernet1 = "/axi/ethernet@ff0d0000";' >> $filename
+echo "    };"                     >> $filename
+echo "};"                     >> $filename
+
+# Add compatible tags
+# Add the post chunk files here
+for chunk in $post_chunks
+do 
+    cat $chunk >> $filename
+done

@@ -1,0 +1,3 @@
+&TDC_INT {
+    compatible = "generic-uio,ui_pdrv";
+};

@@ -110,3 +110,11 @@ latex/
 #################################################################################
 kernel/zynq_build
 kernel/logs
+
+#################################################################################
+# Yocto
+#################################################################################
+Krio-Yocto/build
+Krio-Yocto/sources
+Krio-Yocto/setupsdk
+Krio-Yocto/meta-krio/recipes-apps/tdc-app/files/system.xsa

@@ -23,5 +23,5 @@
     status = "okay";
     phy-handle = <&phy1>;
     phy-mode = "rgmii-id";
-    /* No mdio node needed here, they share the bus */
+    /* No mdio node needed here, they share the bus: https://xilinx-wiki.atlassian.net/wiki/spaces/A/pages/18841740/Macb+Driver#Common-MDIO-DT */
 };

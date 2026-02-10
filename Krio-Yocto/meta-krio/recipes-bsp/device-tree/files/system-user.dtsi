@@ -1,0 +1,169 @@
+/include/ "system-conf.dtsi"
+/{
+	AXI_BRAM_1_CTRL: axi_bram_ctrl@a0000000 {
+		clock-names = "s_axi_aclk";
+		clocks = <&zynqmp_clk 71>;
+		compatible = "xlnx,axi-bram-ctrl-4.1";
+		reg = <0x0 0xa0000000 0x0 0x2000>;
+		xlnx,bram-addr-width = <0xa>;
+		xlnx,bram-inst-mode = "EXTERNAL";
+		xlnx,ecc = <0x0>;
+		xlnx,ecc-onoff-reset-value = <0x0>;
+		xlnx,ecc-type = <0x0>;
+		xlnx,fault-inject = <0x0>;
+		xlnx,memory-depth = <0x400>;
+		xlnx,rd-cmd-optimization = <0x0>;
+		xlnx,read-latency = <0x1>;
+		xlnx,s-axi-ctrl-addr-width = <0x20>;
+		xlnx,s-axi-ctrl-data-width = <0x20>;
+		xlnx,s-axi-id-width = <0x1>;
+		xlnx,s-axi-supports-narrow-burst = <0x0>;
+		xlnx,single-port-bram = <0x1>;
+	};
+
+	AXI_BRAM_2_CTRL: axi_bram_ctrl@a0002000 {
+		clock-names = "s_axi_aclk";
+		clocks = <&zynqmp_clk 71>;
+		compatible = "xlnx,axi-bram-ctrl-4.1";
+		reg = <0x0 0xa0002000 0x0 0x2000>;
+		xlnx,bram-addr-width = <0xa>;
+		xlnx,bram-inst-mode = "EXTERNAL";
+		xlnx,ecc = <0x0>;
+		xlnx,ecc-onoff-reset-value = <0x0>;
+		xlnx,ecc-type = <0x0>;
+		xlnx,fault-inject = <0x0>;
+		xlnx,memory-depth = <0x400>;
+		xlnx,rd-cmd-optimization = <0x0>;
+		xlnx,read-latency = <0x1>;
+		xlnx,s-axi-ctrl-addr-width = <0x20>;
+		xlnx,s-axi-ctrl-data-width = <0x20>;
+		xlnx,s-axi-id-width = <0x1>;
+		xlnx,s-axi-supports-narrow-burst = <0x0>;
+		xlnx,single-port-bram = <0x1>;
+	};
+
+	READ_BUSY: gpio@a0010000 {
+		#gpio-cells = <2>;
+		clock-names = "s_axi_aclk";
+		clocks = <&zynqmp_clk 71>;
+		compatible = "xlnx,axi-gpio-2.0", "xlnx,xps-gpio-1.00.a";
+		gpio-controller ;
+		reg = <0x0 0xa0010000 0x0 0x10000>;
+		xlnx,all-inputs = <0x0>;
+		xlnx,all-inputs-2 = <0x0>;
+		xlnx,all-outputs = <0x1>;
+		xlnx,all-outputs-2 = <0x0>;
+		xlnx,dout-default = <0x00000000>;
+		xlnx,dout-default-2 = <0x00000000>;
+		xlnx,gpio-width = <0x1>;
+		xlnx,gpio2-width = <0x20>;
+		xlnx,interrupt-present = <0x0>;
+		xlnx,is-dual = <0x0>;
+		xlnx,tri-default = <0xFFFFFFFF>;
+		xlnx,tri-default-2 = <0xFFFFFFFF>;
+	};
+
+	WHICH_BRAM: gpio@a0020000 {
+		#gpio-cells = <2>;
+		clock-names = "s_axi_aclk";
+		clocks = <&zynqmp_clk 71>;
+		compatible = "xlnx,axi-gpio-2.0", "xlnx,xps-gpio-1.00.a";
+		gpio-controller ;
+		reg = <0x0 0xa0020000 0x0 0x10000>;
+		xlnx,all-inputs = <0x1>;
+		xlnx,all-inputs-2 = <0x0>;
+		xlnx,all-outputs = <0x0>;
+		xlnx,all-outputs-2 = <0x0>;
+		xlnx,dout-default = <0x00000000>;
+		xlnx,dout-default-2 = <0x00000000>;
+		xlnx,gpio-width = <0x2>;
+		xlnx,gpio2-width = <0x20>;
+		xlnx,interrupt-present = <0x0>;
+		xlnx,is-dual = <0x0>;
+		xlnx,tri-default = <0xFFFFFFFF>;
+		xlnx,tri-default-2 = <0xFFFFFFFF>;
+	};
+
+	clocking0: clocking0 {
+		#clock-cells = <0>;
+		assigned-clock-rates = <99999001>;
+		assigned-clocks = <&zynqmp_clk 71>;
+		clock-output-names = "fabric_clk";
+		clocks = <&zynqmp_clk 71>;
+		compatible = "xlnx,fclk";
+	};
+
+	clocking1: clocking1 {
+		#clock-cells = <0>;
+		assigned-clock-rates = <49999500>;
+		assigned-clocks = <&zynqmp_clk 72>;
+		clock-output-names = "fabric_clk";
+		clocks = <&zynqmp_clk 72>;
+		compatible = "xlnx,fclk";
+	};
+
+    TDC_INT: tdc_int@80000000 {
+        compatible = "generic-uio", "ui_pdrv";
+        interrupt-parent = <&gic>;
+        interrupts = <0 89 1>;
+    };
+    
+    chosen {
+        bootargs = "earlycon console=ttyPS1,115200 clk_ignore_unused uio_pdrv_genirq.of_id=generic-uio,ui_pdrv xilinx_tsn_ep.st_pcp=4 init_fatal_sh=1 cma=900M ";
+        stdout-path = "serial1:115200n8";
+    };
+	
+    aliases {
+        ethernet0 = "/axi/ethernet@ff0c0000";
+        ethernet1 = "/axi/ethernet@ff0d0000";
+    };
+
+};
+
+&AXI_BRAM_1_CTRL {
+    compatible = "generic-uio,ui_pdrv";
+};
+
+&AXI_BRAM_2_CTRL {
+    compatible = "generic-uio,ui_pdrv";
+};
+
+&READ_BUSY {
+    compatible = "generic-uio,ui_pdrv";
+};
+
+&WHICH_BRAM {
+    compatible = "generic-uio,ui_pdrv";
+};
+
+&TDC_INT {
+    compatible = "generic-uio,ui_pdrv";
+};
+
+&gem1 {
+    phy-handle = <&phy0>;
+    phy-mode = "rgmii-id";
+    xlnx,has-mdio = <0x1>;
+    mdio {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	compatible = "cdns,gem-mdio";
+        phy0: phy@0 {
+            compatible = "ti,dp83869", "ethernet-phy-id2000.a0f3";
+            reg = <0x0>;
+	    device_type = "ethernet-phy";
+        };
+        phy1: phy@3 { /* PHY for GEM2, using GEM1 MDIO */
+            compatible = "ti,dp83869", "ethernet-phy-id2000.a0f3";
+            reg = <0x3>;
+            device_type = "ethernet-phy";
+        };
+    };
+};
+
+&gem2 {
+    status = "okay";
+    phy-handle = <&phy1>;
+    phy-mode = "rgmii-id";
+    /* No mdio node needed here, they share the bus: https://xilinx-wiki.atlassian.net/wiki/spaces/A/pages/18841740/Macb+Driver#Common-MDIO-DT */
+};

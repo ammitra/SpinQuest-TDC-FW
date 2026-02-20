@@ -2,19 +2,38 @@
     phy-handle = <&phy0>;
     phy-mode = "rgmii-id";
     xlnx,has-mdio = <0x1>;
+    local-mac-address = [00 0a 35 00 00 00];
     mdio {
 	#address-cells = <1>;
 	#size-cells = <0>;
 	compatible = "cdns,gem-mdio";
-        phy0: phy@0 {
-            compatible = "ti,dp83869", "ethernet-phy-id2000.a0f3";
-            reg = <0x0>;
+        phy0: phy@4 {
+            compatible = "ti,dp83869", "ethernet-phy-ieee802.3-c22";
+            reg = <0x4>;
 	    device_type = "ethernet-phy";
+            ti,min-output-impedance;
+            ti,rx-internal-delay = <2000>;
+            ti,tx-internal-delay = <2000>;
+            ti,dp83869-rxctrl-strap-quirk; /* May be needed */
+            enet-phy-lane-no-swap; /* If set, indicates that PHY will disable swap of the TX/RX lanes. This property allows the PHY to work correctly after e.g. wrong bootstrap configuration caused by issues in PCB layout design. */
+            eee-broken-1000t; /* Disable EEE for 1000BASE-T */
+            eee-broken-100tx;  /* Disable EEE for 100BASE-TX */
+	    phy-reset-gpios = <&gpio 28 GPIO_ACTIVE_LOW>;
+	    ti,op-mode = <0>; /* DP83869_RGMII_COPPER_ETHERNET */
         };
-        phy1: phy@3 { /* PHY for GEM2, using GEM1 MDIO */
-            compatible = "ti,dp83869", "ethernet-phy-id2000.a0f3";
-            reg = <0x3>;
+        phy1: phy@7 { /* PHY for GEM2, using GEM1 MDIO */
+            compatible = "ti,dp83869", "ethernet-phy-ieee802.3-c22";
+            reg = <0x7>;
             device_type = "ethernet-phy";
+            ti,min-output-impedance;
+            ti,rx-internal-delay = <2000>;
+            ti,tx-internal-delay = <2000>;
+            ti,dp83869-rxctrl-strap-quirk;
+            enet-phy-lane-no-swap;
+            eee-broken-1000t;
+            eee-broken-100tx;
+	    phy-reset-gpios = <&gpio 29 GPIO_ACTIVE_LOW>;
+	    ti,op-mode = <0>;
         };
     };
 };

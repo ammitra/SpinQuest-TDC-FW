@@ -25,7 +25,7 @@ do
 done
 
 echo "    chosen {"                     >> $filename
-echo "        bootargs = \"earlycon console=ttyPS1,115200 clk_ignore_unused uio_pdrv_genirq.of_id=generic-uio,ui_pdrv xilinx_tsn_ep.st_pcp=4 init_fatal_sh=1 cma=900M \";" >> $filename
+echo "        bootargs = \"console=ttyPS0,115200 clk_ignore_unused uio_pdrv_genirq.of_id=generic-uio,ui_pdrv xilinx_tsn_ep.st_pcp=4 init_fatal_sh=1 cma=900M earlycon=cdns,mmio,0xFF000000 rw\";" >> $filename
 echo "        stdout-path = \"serial1:115200n8\";" >> $filename
 echo "    };"                     >> $filename
 echo "	  aliases {" >> $filename

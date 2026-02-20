@@ -1,6 +1,34 @@
-# HDA18 (JA1 C22) - only one trigger bit for now 
-set_property PACKAGE_PIN B11 [get_ports trigger]
-set_property IOSTANDARD LVCMOS33 [get_ports trigger]
+########################################################################
+# MLVDS sync bus
+########################################################################
+
+# HDA16_CC (JA1 B21)
+set_property PACKAGE_PIN E12 [get_ports mlvds_sync_clkRF]
+set_property IOSTANDARD LVCMOS33 [get_ports mlvds_sync_clkRF]
+# Have to set some clock constraints when using external clock through clock-capable pin on HDIO bank
+# https://adaptivesupport.amd.com/s/question/0D54U00006rWndCSAS/why-hdio-banks-have-global-clock-pins-if-they-are-not-directly-connected-to-a-global-clock-net-?language=en_US
+# https://adaptivesupport.amd.com/s/question/0D52E00006hpgiwSAA/drc-2320-rule-violation-plhdio4-hdio-drc-checks-the-following-io-terminals-are-locked-to-highdensity-io-banks-but-they-drive-a-pllmmcmbufgctrlbufgcediv-instance-which-cannot-be-placed-in?language=en_US
+#set_property CLOCK_DEDICATED_ROUTE ANY_CMT_COLUMN [get_nets design_64ch_2BRAM_i/clk_wiz_0/inst/clk_in1_design_64ch_2BRAM_clk_wiz_0_0]
+set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets mlvds_sync_clkRF_IBUF_inst/O]
+set_property CLOCK_DEDICATED_ROUTE ANY_CMT_COLUMN [get_nets xlnx_opt_]
+# HDA18 (JA1 C22)
+set_property PACKAGE_PIN B11 [get_ports mlvds_sync_trigger]
+set_property IOSTANDARD LVCMOS33 [get_ports mlvds_sync_trigger]
+
+# HDA19 (JA1 C23)
+#set_property PACKAGE_PIN A10 [get_ports {mlvds_sync[2]}]
+#set_property IOSTANDARD LVCMOS33 [get_ports {mlvds_sync[2]}]
+
+# HDA20 (JA1 C24)
+#set_property PACKAGE_PIN A12 [get_ports {mlvds_sync[3]}]
+#set_property IOSTANDARD LVCMOS33 [get_ports {mlvds_sync[3]}]
+
+
+
+
+########################################################################
+# Data (64ch)
+########################################################################
 
 # HDA00_CC (JA1 D16)
 set_property PACKAGE_PIN G11 [get_ports {tdc_hit[0]}]
@@ -320,4 +348,3 @@ set_property IOSTANDARD LVCMOS33 [get_ports {tdc_hit[62]}]
 # HDC23 (JA2 A60)
 set_property PACKAGE_PIN AA12 [get_ports {tdc_hit[63]}]
 set_property IOSTANDARD LVCMOS33 [get_ports {tdc_hit[63]}]
-

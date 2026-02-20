@@ -1,7 +1,7 @@
 {
   "design": {
     "design_info": {
-      "boundary_crc": "0xAACAEE30AACAEE30",
+      "boundary_crc": "0xE2FF49A933C8048B",
       "device": "xck26-sfvc784-2LV-c",
       "gen_directory": "../../../../TDC_64ch.gen/sources_1/bd/design_64ch_2BRAM",
       "name": "design_64ch_2BRAM",
@@ -26,13 +26,48 @@
       "system_ila_0": ""
     },
     "ports": {
-      "trigger": {
-        "direction": "I"
-      },
       "tdc_hit": {
         "direction": "I",
         "left": "0",
         "right": "63"
+      },
+      "mlvds_sync_clkRF": {
+        "type": "clk",
+        "direction": "I",
+        "parameters": {
+          "CLK_DOMAIN": {
+            "value": "design_64ch_2BRAM_mlvds_sync_clkRF",
+            "value_src": "default"
+          },
+          "FREQ_HZ": {
+            "value": "53100000"
+          },
+          "FREQ_TOLERANCE_HZ": {
+            "value": "0",
+            "value_src": "default"
+          },
+          "INSERT_VIP": {
+            "value": "0",
+            "value_src": "default"
+          },
+          "PHASE": {
+            "value": "0.0",
+            "value_src": "default"
+          },
+          "PortWidth": {
+            "value": "1",
+            "value_src": "user_prop"
+          }
+        }
+      },
+      "mlvds_sync_trigger": {
+        "direction": "I",
+        "parameters": {
+          "PortWidth": {
+            "value": "1",
+            "value_src": "user_prop"
+          }
+        }
       }
     },
     "components": {
@@ -740,12 +775,6 @@
           "PSU__CRL_APB__PL1_REF_CTRL__ACT_FREQMHZ": {
             "value": "49.999500"
           },
-          "PSU__CRL_APB__PL1_REF_CTRL__FREQMHZ": {
-            "value": "50"
-          },
-          "PSU__CRL_APB__PL1_REF_CTRL__SRCSEL": {
-            "value": "IOPLL"
-          },
           "PSU__CRL_APB__QSPI_REF_CTRL__ACT_FREQMHZ": {
             "value": "124.998749"
           },
@@ -993,7 +1022,7 @@
             "value": "1"
           },
           "PSU__FPGA_PL1_ENABLE": {
-            "value": "1"
+            "value": "0"
           },
           "PSU__GEM1_COHERENCY": {
             "value": "0"
@@ -1068,9 +1097,6 @@
             "value": "0"
           },
           "PSU__PL_CLK0_BUF": {
-            "value": "TRUE"
-          },
-          "PSU__PL_CLK1_BUF": {
             "value": "TRUE"
           },
           "PSU__PMU_COHERENCY": {
@@ -1564,7 +1590,7 @@
             "direction": "I",
             "parameters": {
               "FREQ_HZ": {
-                "value": "199998000",
+                "value": "212400000",
                 "value_src": "ip_prop"
               },
               "PHASE": {
@@ -1581,7 +1607,7 @@
             "direction": "I",
             "parameters": {
               "FREQ_HZ": {
-                "value": "199998000",
+                "value": "212400000",
                 "value_src": "ip_prop"
               },
               "PHASE": {
@@ -1598,7 +1624,7 @@
             "direction": "I",
             "parameters": {
               "FREQ_HZ": {
-                "value": "199998000",
+                "value": "212400000",
                 "value_src": "ip_prop"
               },
               "PHASE": {
@@ -1615,7 +1641,7 @@
             "direction": "I",
             "parameters": {
               "FREQ_HZ": {
-                "value": "199998000",
+                "value": "212400000",
                 "value_src": "ip_prop"
               },
               "PHASE": {
@@ -1632,7 +1658,7 @@
             "direction": "I",
             "parameters": {
               "FREQ_HZ": {
-                "value": "49999500",
+                "value": "53100000",
                 "value_src": "user_prop"
               },
               "PHASE": {
@@ -1640,8 +1666,12 @@
                 "value_src": "default_prop"
               },
               "CLK_DOMAIN": {
-                "value": "design_64ch_2BRAM_zynq_ultra_ps_e_0_0_pl_clk1",
+                "value": "design_64ch_2BRAM_mlvds_sync_clkRF",
                 "value_src": "default_prop"
+              },
+              "PortWidth": {
+                "value": "1",
+                "value_src": "user_prop"
               }
             }
           },
@@ -1668,7 +1698,13 @@
             "right": "63"
           },
           "trigger": {
-            "direction": "I"
+            "direction": "I",
+            "parameters": {
+              "PortWidth": {
+                "value": "1",
+                "value_src": "user_prop"
+              }
+            }
           },
           "rd_busy": {
             "direction": "I"
@@ -1936,28 +1972,28 @@
         "inst_hier_path": "clk_wiz_0",
         "parameters": {
           "CLKIN1_JITTER_PS": {
-            "value": "200.0"
+            "value": "188.32000000000002"
           },
           "CLKOUT1_JITTER": {
-            "value": "109.401"
+            "value": "114.336"
           },
           "CLKOUT1_PHASE_ERROR": {
-            "value": "138.125"
+            "value": "145.117"
           },
           "CLKOUT1_REQUESTED_OUT_FREQ": {
-            "value": "199.998"
+            "value": "212.4"
           },
           "CLKOUT1_REQUESTED_PHASE": {
             "value": "0"
           },
           "CLKOUT2_JITTER": {
-            "value": "109.401"
+            "value": "114.336"
           },
           "CLKOUT2_PHASE_ERROR": {
-            "value": "138.125"
+            "value": "145.117"
           },
           "CLKOUT2_REQUESTED_OUT_FREQ": {
-            "value": "199.998"
+            "value": "212.4"
           },
           "CLKOUT2_REQUESTED_PHASE": {
             "value": "45"
@@ -1966,13 +2002,13 @@
             "value": "true"
           },
           "CLKOUT3_JITTER": {
-            "value": "109.401"
+            "value": "114.336"
           },
           "CLKOUT3_PHASE_ERROR": {
-            "value": "138.125"
+            "value": "145.117"
           },
           "CLKOUT3_REQUESTED_OUT_FREQ": {
-            "value": "199.998"
+            "value": "212.4"
           },
           "CLKOUT3_REQUESTED_PHASE": {
             "value": "90"
@@ -1981,13 +2017,13 @@
             "value": "true"
           },
           "CLKOUT4_JITTER": {
-            "value": "109.401"
+            "value": "114.336"
           },
           "CLKOUT4_PHASE_ERROR": {
-            "value": "138.125"
+            "value": "145.117"
           },
           "CLKOUT4_REQUESTED_OUT_FREQ": {
-            "value": "199.998"
+            "value": "212.4"
           },
           "CLKOUT4_REQUESTED_PHASE": {
             "value": "135"
@@ -1995,44 +2031,53 @@
           "CLKOUT4_USED": {
             "value": "true"
           },
+          "ENABLE_CLOCK_MONITOR": {
+            "value": "false"
+          },
           "MMCM_CLKFBOUT_MULT_F": {
-            "value": "28.000"
+            "value": "24.000"
           },
           "MMCM_CLKIN1_PERIOD": {
-            "value": "20.000"
+            "value": "18.832"
           },
           "MMCM_CLKIN2_PERIOD": {
             "value": "10.0"
           },
           "MMCM_CLKOUT0_DIVIDE_F": {
-            "value": "7.000"
+            "value": "6.000"
           },
           "MMCM_CLKOUT1_DIVIDE": {
-            "value": "7"
+            "value": "6"
           },
           "MMCM_CLKOUT1_PHASE": {
             "value": "45.000"
           },
           "MMCM_CLKOUT2_DIVIDE": {
-            "value": "7"
+            "value": "6"
           },
           "MMCM_CLKOUT2_PHASE": {
             "value": "90.000"
           },
           "MMCM_CLKOUT3_DIVIDE": {
-            "value": "7"
+            "value": "6"
           },
           "MMCM_CLKOUT3_PHASE": {
             "value": "135.000"
           },
+          "MMCM_DIVCLK_DIVIDE": {
+            "value": "1"
+          },
           "NUM_OUT_CLKS": {
             "value": "4"
           },
+          "PRIMITIVE": {
+            "value": "MMCM"
+          },
           "PRIM_IN_FREQ": {
-            "value": "49.999500"
+            "value": "53.1"
           },
           "PRIM_SOURCE": {
-            "value": "No_buffer"
+            "value": "Global_buffer"
           }
         }
       },
@@ -2354,6 +2399,19 @@
           }
         }
       },
+      "mlvds_sync_clkRF_1": {
+        "ports": [
+          "mlvds_sync_clkRF",
+          "clk_wiz_0/clk_in1",
+          "top_64ch_2BRAM_0/clk_sys"
+        ]
+      },
+      "mlvds_sync_trigger_1": {
+        "ports": [
+          "mlvds_sync_trigger",
+          "top_64ch_2BRAM_0/trigger"
+        ]
+      },
       "rst_ps8_0_99M_peripheral_aresetn": {
         "ports": [
           "rst_ps8_0_99M/peripheral_aresetn",
@@ -2396,12 +2454,6 @@
           }
         }
       },
-      "trigger_0_1": {
-        "ports": [
-          "trigger",
-          "top_64ch_2BRAM_0/trigger"
-        ]
-      },
       "zynq_ultra_ps_e_0_pl_clk0": {
         "ports": [
           "zynq_ultra_ps_e_0/pl_clk0",
@@ -2412,13 +2464,6 @@
           "axi_smc/aclk",
           "rst_ps8_0_99M/slowest_sync_clk",
           "zynq_ultra_ps_e_0/maxihpm0_fpd_aclk"
-        ]
-      },
-      "zynq_ultra_ps_e_0_pl_clk1": {
-        "ports": [
-          "zynq_ultra_ps_e_0/pl_clk1",
-          "top_64ch_2BRAM_0/clk_sys",
-          "clk_wiz_0/clk_in1"
         ]
       },
       "zynq_ultra_ps_e_0_pl_resetn0": {

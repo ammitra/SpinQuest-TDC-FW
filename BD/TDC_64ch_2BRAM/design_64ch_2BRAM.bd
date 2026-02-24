@@ -382,11 +382,17 @@
           "PSU_MIO_58_INPUT_TYPE": {
             "value": "cmos"
           },
+          "PSU_MIO_59_PULLUPDOWN": {
+            "value": "disable"
+          },
           "PSU_MIO_5_DRIVE_STRENGTH": {
             "value": "4"
           },
           "PSU_MIO_5_SLEW": {
             "value": "slow"
+          },
+          "PSU_MIO_61_PULLUPDOWN": {
+            "value": "disable"
           },
           "PSU_MIO_64_DRIVE_STRENGTH": {
             "value": "12"
@@ -436,11 +442,17 @@
           "PSU_MIO_76_DRIVE_STRENGTH": {
             "value": "4"
           },
+          "PSU_MIO_76_PULLUPDOWN": {
+            "value": "pullup"
+          },
           "PSU_MIO_76_SLEW": {
             "value": "slow"
           },
           "PSU_MIO_77_DRIVE_STRENGTH": {
             "value": "4"
+          },
+          "PSU_MIO_77_PULLUPDOWN": {
+            "value": "pullup"
           },
           "PSU_MIO_77_SLEW": {
             "value": "slow"
